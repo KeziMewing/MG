@@ -68,7 +68,6 @@ MinigamesTab:CreateToggle({
             while true do
                 humanoid.Jump = true
                 wait(0.5) -- Adjust delay as needed 
-            end
 
             -- Enter Minigames
             local args = {
