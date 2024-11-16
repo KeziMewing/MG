@@ -44,15 +44,30 @@ MinigamesTab:CreateToggle({
     CurrentValue = false,
     Flag = "WinAccount", -- Unique identifier
     Callback = function(Value)
-        if Value then
+        local player = game.Players.LocalPlayer
+
+        -- Function to enter the minigame
+        local function enterMinigame()
             local args = {
                 [1] = "Enter",
                 [2] = "2020Hiace" -- Replace with correct vehicle name for "Win Account"
             }
             game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
         end
+
+        if Value then
+            -- Enter Minigames when toggled on
+            enterMinigame()
+
+            -- Detect when the character resets
+            player.CharacterAdded:Connect(function()
+                wait(1) -- Wait for the new character to load properly
+                enterMinigame() -- Re-run the minigame entry
+            end)
+        end
     end
 })
+
  
 -- Adding Lose Account Toggle
 MinigamesTab:CreateToggle({
@@ -61,9 +76,11 @@ MinigamesTab:CreateToggle({
     Flag = "LoseAccount", -- Unique identifier
     Callback = function(Value)
         local player = game.Players.LocalPlayer
-        local humanoid = player.Character:WaitForChild("Humanoid")
- 
-        if Value then
+
+        -- Function to handle jumping and entering the minigame
+        local function enterMinigame()
+            local humanoid = player.Character:WaitForChild("Humanoid")
+            
             -- Start Jumping Loop in a separate coroutine
             coroutine.wrap(function()
                 while Value do
@@ -71,7 +88,7 @@ MinigamesTab:CreateToggle({
                     wait(0.5) -- Adjust delay as needed
                 end
             end)()
- 
+
             -- Enter Minigames
             local args = {
                 [1] = "Enter",
@@ -79,8 +96,29 @@ MinigamesTab:CreateToggle({
             }
             game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
         end
+
+        if Value then
+            -- Check if the character exists and call enterMinigame
+            if player.Character then
+                enterMinigame()
+            end
+
+            -- Detect when the character resets
+            player.CharacterAdded:Connect(function()
+                wait(1) -- Wait for the new character to load properly
+                enterMinigame() -- Re-run the minigame entry
+            end)
+
+            -- If the character is already present, call enterMinigame
+            enterMinigame()
+        else
+            -- If the toggle is turned off, you might want to stop the jumping loop
+            Value = false
+        end
     end
 })
+
+
  
 
 -- Persisting UI on Character Reset
