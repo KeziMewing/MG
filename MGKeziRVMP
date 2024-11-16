@@ -40,44 +40,48 @@ MinigamesTab:CreateButton({
 
 -- Adding Win Account Toggle
 MinigamesTab:CreateToggle({
-   Name = "Win Account",
-   CurrentValue = false,
-   Flag = "WinAccount", -- Unique identifier
-   Callback = function(Value)
-       if Value then
-           local args = {
-               [1] = "Enter",
-               [2] = "2020Hiace" -- Replace with correct vehicle name for "Win Account"
-           }
-           game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
-       end
-   end
+    Name = "Win Account",
+    CurrentValue = false,
+    Flag = "WinAccount", -- Unique identifier
+    Callback = function(Value)
+        if Value then
+            local args = {
+                [1] = "Enter",
+                [2] = "2020Hiace" -- Replace with correct vehicle name for "Win Account"
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+        end
+    end
 })
-
+ 
 -- Adding Lose Account Toggle
 MinigamesTab:CreateToggle({
-   Name = "Lose Account",
-   CurrentValue = false,
-   Flag = "LoseAccount", -- Unique identifier
-   Callback = function(Value)
+    Name = "Lose Account",
+    CurrentValue = false,
+    Flag = "LoseAccount", -- Unique identifier
+    Callback = function(Value)
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character:WaitForChild("Humanoid")
+ 
         if Value then
-            -- Character Jump
-            local player = game.Players.LocalPlayer
-            local humanoid = player.Character:WaitForChild("Humanoid")
-            
-            while true do
-                humanoid.Jump = true
-                wait(0.5) -- Adjust delay as needed 
-
+            -- Start Jumping Loop in a separate coroutine
+            coroutine.wrap(function()
+                while Value do
+                    humanoid.Jump = true
+                    wait(0.5) -- Adjust delay as needed
+                end
+            end)()
+ 
             -- Enter Minigames
             local args = {
                 [1] = "Enter",
                 [2] = "2021Avanza15CVT" -- Replace with correct vehicle name for "Lose Account"
             }
             game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
-        end   
+        end
     end
 })
+ 
 
 
 -- Persisting UI on Character Reset
