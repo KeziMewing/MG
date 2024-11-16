@@ -82,11 +82,6 @@ MinigamesTab:CreateToggle({
     end
 })
  
--- Notify
-
-Rayfield:Notify = function() 
-
-end
 
 -- Persisting UI on Character Reset
 local ScreenGui = Window:GetGui()
