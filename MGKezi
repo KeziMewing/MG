@@ -13,9 +13,9 @@ local Window = Rayfield:CreateWindow({
     Name = "KeziHub V1.0",
     LoadingTitle = "Kezi Specialist HUB",
     LoadingSubtitle = "by KezTeam",
-    Theme = "Amber Glow",
+    Theme = "AmberGlow",
     ConfigurationSaving = {
-        Enabled = true,
+        Enabled = false,
         FolderName = "KezHub",
         FileName = "KeziHubSettings"
     }
