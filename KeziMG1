@@ -21,6 +21,67 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
+-- Tab for Auto Farm
+local AutofarmTab = Window:CreateTab("Auto Farm", 4483362458) -- Title and icon
+
+local selectedJob = "Truck" -- Default selected job
+local teleportTime = "" -- Initialize teleport time variable
+
+-- Dropdown for job selection
+local Dropdown = AutofarmTab:CreateDropdown({
+    Name = "Select Job",
+    Options = {"Truck"}, -- Added more options if needed
+    CurrentOption = {"Truck"},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(Options)
+        selectedJob = Options[1] -- Update selected job based on dropdown selection
+    end,
+})
+
+-- Input for teleport time
+local Input = AutofarmTab:CreateInput({
+    Name = "Teleport Time",
+    CurrentValue = teleportTime,
+    PlaceholderText = "Teleport Time (in seconds)",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Input1",
+    Callback = function(Text)
+        teleportTime = Text -- Update teleport time based on input
+    end,
+})
+
+-- Toggle for starting auto farm
+local Toggle = AutofarmTab:CreateToggle({
+    Name = "Start AutoFarm",
+    CurrentValue = false,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        if Value then
+            -- Validate teleport time input
+            local teleportTimeValue = tonumber(teleportTime)
+            if teleportTimeValue and teleportTimeValue > 0 then
+                -- Proceed with starting the AutoFarm
+                print("Starting AutoFarm for job: " .. selectedJob .. " with teleport time: " .. teleportTimeValue .. " seconds.")
+                -- AutoFarm logic here
+                if selectedJob = Truck
+            else
+                -- Inform the user about the invalid input
+                print("Please enter a valid teleport time greater than 50.")
+                Toggle:SetValue(false) -- Turn off the toggle if the input is invalid
+            end
+        else
+            print("AutoFarm stopped.")
+            -- kill the character
+            if player.Character then
+                player.character:BreakJoints()
+            end
+        end
+    end
+})
+
+
+
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
 
@@ -64,6 +125,11 @@ MinigamesTab:CreateToggle({
                 wait(1) -- Wait for the new character to load properly
                 enterMinigame() -- Re-run the minigame entry
             end)
+        else
+            -- Kill The Character
+            if player.Character then
+                player.character:BreakJoints()
+            end
         end
     end
 })
@@ -112,14 +178,13 @@ MinigamesTab:CreateToggle({
             -- If the character is already present, call enterMinigame
             enterMinigame()
         else
-            -- If the toggle is turned off, you might want to stop the jumping loop
-            Value = false
+            -- Kill The Character
+            if player.Character then
+                player.character:BreakJoints()
+            end
         end
     end
 })
-
-
- 
 
 -- Persisting UI on Character Reset
 local ScreenGui = Window:GetGui()
