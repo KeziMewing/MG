@@ -94,33 +94,35 @@ local Toggle = MinigamesTab:CreateToggle({
     Flag = "LoseAccount",
     Callback = function(Value)
         local player = game.Players.LocalPlayer -- Get the local player
-
-        if Value then
-            local function enterMinigame()
-                coroutine.wrap()
-                local args = {
-                    [1] = "Enter",
-                    [2] = "2021Avanza15CVT" -- Replace with correct vehicle name for "Win Account"
-                }
-                game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
-
-                local player = game.Players.LocalPlayer
-                local humanoid = player.Character:WaitForChild("Humanoid")
-
-                while true do
+    
+        -- Function to enter the minigame
+        local function enterMinigame()
+            local args = {
+                [1] = "Enter",
+                [2] = "2021Avanza15CVT" -- Replace with the correct vehicle name for "Win Account"
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+    
+            local humanoid = player.Character:WaitForChild("Humanoid")
+    
+            -- Start jumping coroutine
+            coroutine.wrap(function()
+                while isMiniGameLoseActive do -- Check if mini-game lose is still active
                     humanoid.Jump = true
                     wait(0.5) -- Adjust delay as needed
                 end
-            end
-
+            end)()
+        end
+    
+        if Value then
             -- Set the mini-game lose active flag to true
             isMiniGameLoseActive = true
-
+    
             -- Check if the character exists and call enterMinigame
             if player.Character then
                 enterMinigame()
             end
-
+    
             -- Detect when the character resets
             player.CharacterAdded:Connect(function()
                 wait(1) -- Wait for the new character to load properly
@@ -128,22 +130,20 @@ local Toggle = MinigamesTab:CreateToggle({
                     enterMinigame() -- Re-run the mini-game entry
                 end
             end)
-
+    
             -- If the character is already present, call enterMinigame
             enterMinigame()
         else
             -- Reset Character
-            local player = game.Players.LocalPlayer
-
             if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
                 player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Set health to 0 to reset the character
             end
-
+    
             -- Set the mini-game lose active flag to false
             isMiniGameLoseActive = false
         end
     end
-})
+    
 
 -- Persisting UI on Character Reset
 local ScreenGui = Window:GetGui()
