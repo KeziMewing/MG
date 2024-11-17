@@ -39,6 +39,8 @@ MinigamesTab:CreateButton({
 })
 
 -- Adding Win Account Toggle
+local isMiniGameWinActive = false -- Flag to track if the mini-game win state is active
+
 MinigamesTab:CreateToggle({
     Name = "Win Account",
     CurrentValue = false,
@@ -56,53 +58,45 @@ MinigamesTab:CreateToggle({
         end
 
         if Value then
+            -- Set the mini-game win active flag to true
+            isMiniGameWinActive = true
+
             -- Enter Minigames when toggled on
             enterMinigame()
 
             -- Detect when the character resets
             player.CharacterAdded:Connect(function()
                 wait(1) -- Wait for the new character to load properly
-                enterMinigame() -- Re-run the minigame entry
+                if isMiniGameWinActive then -- Only call if mini-game win is still active
+                    enterMinigame() -- Re-run the minigame entry
+                end
             end)
         else
             -- Kill The Character
             if player.Character then
-                player.character:BreakJoints()
+                player.Character:BreakJoints() -- Corrected to use "Character" not "character"
             end
+            
+            -- Set the mini-game win active flag to false
+            isMiniGameWinActive = false
         end
     end
 })
-
  
 -- Adding Lose Account Toggle
-MinigamesTab:CreateToggle({
-    Name = "Lose Account",
+local isMiniGameLoseActive = false -- Flag to track if the mini-game lose state is active
+
+local Toggle = AutofarmTab:CreateToggle({
+    Name = "Start AutoFarm",
     CurrentValue = false,
-    Flag = "LoseAccount", -- Unique identifier
+    Flag = "Toggle1",
     Callback = function(Value)
-        local player = game.Players.LocalPlayer
-
-        -- Function to handle jumping and entering the minigame
-        local function enterMinigame()
-            local humanoid = player.Character:WaitForChild("Humanoid")
-            
-            -- Start Jumping Loop in a separate coroutine
-            coroutine.wrap(function()
-                while Value do
-                    humanoid.Jump = true
-                    wait(0.5) -- Adjust delay as needed
-                end
-            end)()
-
-            -- Enter Minigames
-            local args = {
-                [1] = "Enter",
-                [2] = "2021Avanza15CVT" -- Replace with correct vehicle name for "Lose Account"
-            }
-            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
-        end
+        local player = game.Players.LocalPlayer -- Get the local player
 
         if Value then
+            -- Set the mini-game lose active flag to true
+            isMiniGameLoseActive = true
+
             -- Check if the character exists and call enterMinigame
             if player.Character then
                 enterMinigame()
@@ -111,7 +105,9 @@ MinigamesTab:CreateToggle({
             -- Detect when the character resets
             player.CharacterAdded:Connect(function()
                 wait(1) -- Wait for the new character to load properly
-                enterMinigame() -- Re-run the minigame entry
+                if isMiniGameLoseActive then -- Only call if mini-game lose is still active
+                    enterMinigame() -- Re-run the mini-game entry
+                end
             end)
 
             -- If the character is already present, call enterMinigame
@@ -119,8 +115,11 @@ MinigamesTab:CreateToggle({
         else
             -- Kill The Character
             if player.Character then
-                player.character:BreakJoints()
+                player.Character:BreakJoints() -- Correctly kill the character
             end
+            
+            -- Set the mini-game lose active flag to false
+            isMiniGameLoseActive = false
         end
     end
 })
