@@ -72,9 +72,11 @@ MinigamesTab:CreateToggle({
                 end
             end)
         else
-            -- Kill The Character
-            if player.Character then
-                player.Character:BreakJoints() -- Corrected to use "Character" not "character"
+            -- Reset Character
+            local player = game.Players.LocalPlayer
+
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Set health to 0 to reset the character
             end
             
             -- Set the mini-game win active flag to false
@@ -113,11 +115,13 @@ local Toggle = MinigamesTab:CreateToggle({
             -- If the character is already present, call enterMinigame
             enterMinigame()
         else
-            -- Kill The Character
-            if player.Character then
-                player.Character:BreakJoints() -- Correctly kill the character
+            -- Reset Character
+            local player = game.Players.LocalPlayer
+
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Set health to 0 to reset the character
             end
-            
+
             -- Set the mini-game lose active flag to false
             isMiniGameLoseActive = false
         end
