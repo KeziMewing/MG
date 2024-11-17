@@ -86,7 +86,7 @@ MinigamesTab:CreateToggle({
 -- Adding Lose Account Toggle
 local isMiniGameLoseActive = false -- Flag to track if the mini-game lose state is active
 
-local Toggle = AutofarmTab:CreateToggle({
+local Toggle = MinigamesTab:CreateToggle({
     Name = "Lose Account",
     CurrentValue = false,
     Flag = "LoseAccount",
