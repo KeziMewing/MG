@@ -1,0 +1,18 @@
+-- Auto Rejoin Script for Roblox
+
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+
+local function rejoinGame()
+    local player = Players.LocalPlayer
+    local placeId = game.PlaceId
+
+    while true do
+        wait(5) -- Wait before trying to rejoin
+        print("Rejoining game...")
+        TeleportService:Teleport(placeId, player)
+    end
+end
+
+-- Start the rejoin function
+rejoinGame()
