@@ -75,20 +75,25 @@ local function StartAutoFarmTruck()
         -- Fly to specific coordinates
         local targetCFrame = CFrame.new(-21774.8652, 1042.03174, -26777.4453, -0.166060805, 0, -0.986115515, 0, 1, 0, 0.986115515, 0, -0.166060805)
 
-        -- Function to fly to specified CFrame
+        -- Function to fly to specified coordinates
         local function flyToCoordinates(cframe)
             local player = game.Players.LocalPlayer
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                player.Character:FindFirstChild("HumanoidRootPart").CFrame = cframe
+            local username = player.Name -- Get the player's username dynamically
+
+            -- Access the HumanoidRootPart from the specified path
+            local humanoidRootPart = game:GetService("ReplicatedStorage").Modules.NPC.PlayerList:WaitForChild(username):WaitForChild("HumanoidRootPart")
+
+            if humanoidRootPart then
+                humanoidRootPart.CFrame = cframe -- Set the CFrame of the HumanoidRootPart
                 wait(15) -- Wait for 15 seconds to simulate flying time
             else
-                warn("HumanoidRootPart not found.")
+                warn("HumanoidRootPart not found for player: " .. username)
             end
         end
 
         -- Call the function to fly to the target coordinates
         flyToCoordinates(targetCFrame)
-        
+
         -- Start Job (Proximity Prompt)
         local startPrompt = workspace.Etc.Job.Truck.Starter:WaitForChild("Prompt")  -- Ensure path is correct
         if startPrompt and startPrompt:IsA("ProximityPrompt") then
