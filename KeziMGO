@@ -87,9 +87,9 @@ MinigamesTab:CreateToggle({
 local isMiniGameLoseActive = false -- Flag to track if the mini-game lose state is active
 
 local Toggle = AutofarmTab:CreateToggle({
-    Name = "Start AutoFarm",
+    Name = "Lose Account",
     CurrentValue = false,
-    Flag = "Toggle1",
+    Flag = "LoseAccount",
     Callback = function(Value)
         local player = game.Players.LocalPlayer -- Get the local player
 
