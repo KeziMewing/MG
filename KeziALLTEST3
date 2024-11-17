@@ -75,19 +75,27 @@ local function StartAutoFarmTruck()
         -- Fly to specific coordinates
         local targetCFrame = CFrame.new(-21774.8652, 1042.03174, -26777.4453, -0.166060805, 0, -0.986115515, 0, 1, 0, 0.986115515, 0, -0.166060805)
 
-        -- Function to fly to specified coordinates
+        -- Fly to specific coordinates function
         local function flyToCoordinates(cframe)
             local player = game.Players.LocalPlayer
             local username = player.Name -- Get the player's username dynamically
 
-            -- Access the HumanoidRootPart from the specified path
-            local humanoidRootPart = game:GetService("ReplicatedStorage").Modules.NPC.PlayerList:WaitForChild(username):WaitForChild("HumanoidRootPart")
+            -- Wait for the player's HumanoidRootPart to be ready
+            local humanoidRootPartContainer = game:GetService("ReplicatedStorage").Modules.NPC.PlayerList:WaitForChild(username, 10) -- 10 seconds timeout
 
-            if humanoidRootPart then
-                humanoidRootPart.CFrame = cframe -- Set the CFrame of the HumanoidRootPart
-                wait(15) -- Wait for 15 seconds to simulate flying time
+            if humanoidRootPartContainer then
+                -- Attempt to find the HumanoidRootPart
+                local rootPart = humanoidRootPartContainer:FindFirstChild("HumanoidRootPart")
+
+                if rootPart then
+                    -- Move the HumanoidRootPart to the target coordinates
+                    rootPart.CFrame = cframe -- Set the CFrame of the HumanoidRootPart
+                    wait(15) -- Wait for 15 seconds to simulate flying time
+                else
+                    warn("HumanoidRootPart not found for player: " .. username)
+                end
             else
-                warn("HumanoidRootPart not found for player: " .. username)
+                warn("Player's NPC entry not found in PlayerList for username: " .. username)
             end
         end
 
