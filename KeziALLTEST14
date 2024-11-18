@@ -144,19 +144,22 @@ local function StartAutoFarmTruck()
         local player = game.Players.LocalPlayer -- Get the local player
         local targetCost = 40100 -- The target cost to check against
 
+        local player = game.Players.LocalPlayer -- Reference to the local player
+        local targetCost = 40100 -- Define your target cost
+        
         while true do
             -- Spawn Truck (Proximity Prompt)
             local truckJobPath = workspace.Etc.Job.Truck
             local part = truckJobPath:GetChildren()[5] -- Assuming this is the correct index
             local spawnPrompt = part:WaitForChild("Part"):WaitForChild("Prompt") -- Ensure path is correct
-
+        
             if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
                 fireproximityprompt(spawnPrompt)
-                wait(10) -- Wait for the truck to spawn
+                wait(5) -- Wait for the truck to spawn
                 
                 -- After trying to spawn, check the vehicle's cost
-                local vehicle = workspace.Vehicles:FindFirstChild(player.Name) -- Adjust this if the vehicle's name is different
-
+                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar") -- Access the player's car using their username
+        
                 if vehicle then
                     local cost = vehicle:FindFirstChild("Cost")
                     if cost and cost:IsA("NumberValue") then
@@ -176,10 +179,9 @@ local function StartAutoFarmTruck()
                 warn("ProximityPrompt for spawning truck not found or invalid.")
                 return
             end
-
+        
             wait(1) -- Wait before checking again to prevent rapid looping
-        end
-
+        end        
 
         -- Drive Truck (Proximity Prompt)
         local getInPrompt = workspace.Vehicles.asdqwr2twgwdsCar.DriveSeat:WaitForChild("PromptDriveSeat")  -- Ensure path is correct
