@@ -369,6 +369,12 @@ local Input = SettingsTab:CreateInput({
 local Button = SettingsTab:CreateButton({
     Name = "Join Private Server",
     Callback = function()
+        -- Function to teleport to the place first
+        local function TeleportToPlace(placeId)
+            local TeleportService = game:GetService("TeleportService")
+            TeleportService:Teleport(placeId, game.Players.LocalPlayer)  -- Teleporting the local player to the specified place
+        end
+
         -- Function to join the private server using the input value
         local function JoinPrivateServer(serverCode)
             local args = {
@@ -384,7 +390,10 @@ local Button = SettingsTab:CreateButton({
         -- Get the input value from the input field
         local serverCode = Input.CurrentValue -- Retrieve the current value from the input field
 
-        -- Call the function to join the private server with the input text
+        -- Teleport to the specified place first
+        TeleportToPlace(6911148748)  -- Teleporting to the specified Place ID
+
+        -- After teleporting, you can join the private server
         if serverCode and serverCode ~= "" then
             JoinPrivateServer(serverCode)  -- Pass the server code to the function
         else
