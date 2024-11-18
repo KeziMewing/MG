@@ -5,6 +5,19 @@ game:GetService("Players").LocalPlayer.Idled:Connect(function()
     vu:ClickButton2(Vector2.new())
 end)
 
+-- ServerLock Message
+local function sendChatMessage(message)
+    local player = game.Players.LocalPlayer
+    local chatService = game:GetService("Chat")
+
+    -- Use the Chat service to send a message
+    chatService:Chat(player.Character.Head, message, Enum.ChatColor.Blue)
+end
+
+-- Sending the "/serverlock" command
+sendChatMessage("/serverlock")
+print("Sent the command: /serverlock")
+
 -- Rayfield Library
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -347,68 +360,6 @@ local Toggle = MinigamesTab:CreateToggle({
             isMiniGameLoseActive = false
         end
     end
-})
-
--- Tab for Settings
-local SettingsTab = Window:CreateTab("Settings", 4483362458) -- Title and icon
-
--- Create input for server code
-local Input = SettingsTab:CreateInput({
-    Name = "Input Server Code",
-    CurrentValue = "",
-    PlaceholderText = "Enter Private Server Code",
-    RemoveTextAfterFocusLost = false,
-    Flag = "Input1",
-    Callback = function(Text)
-        -- Store the current value of the input for later use
-        Input.CurrentValue = Text
-    end,
-})
-
--- Create a button to start the auto rejoin process
-local Button = SettingsTab:CreateButton({
-    Name = "Start Auto Rejoin",
-    Callback = function()
-        local serverCode = Input.CurrentValue  -- Retrieve the current value from the input field
-
-        -- Check if the server code is valid
-        if not (serverCode and serverCode ~= "") then
-            print("Please enter a valid server code.")  -- Handle empty input
-            return
-        end
-
-        print("Auto Rejoin started for server code: " .. serverCode)
-
-        -- Function to join the private server
-        local function JoinPrivateServer()
-            local args = {
-                [1] = "Join",              -- Action to join
-                [2] = serverCode,          -- Use the server code provided by the user
-                [3] = "JawaTengah"         -- Additional identifier (e.g., game mode or other context)
-            }
-
-            -- Fire the server with the arguments
-            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("PrivateServer"):FireServer(unpack(args))
-        end
-
-        -- Function to handle rejoining
-        local function AutoRejoin()
-            while true do
-                wait(5)  -- Wait before rejoining to prevent spam
-                print("Attempting to rejoin server...")
-                JoinPrivateServer()  -- Call the function to join the private server
-            end
-        end
-
-        -- Listen for character reset
-        game.Players.LocalPlayer.CharacterAdded:Connect(function()
-            print("Character has been reset, attempting to rejoin...")
-            JoinPrivateServer()  -- Rejoin the private server
-        end)
-
-        -- Start the auto rejoin loop
-        AutoRejoin()  -- Begin the auto rejoin process
-    end,
 })
 
 
