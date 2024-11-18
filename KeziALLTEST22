@@ -54,6 +54,52 @@ local Input = AutofarmTab:CreateInput({
 -- Create Truck AutoFarm Function
 local function StartAutoFarmTruck()
     coroutine.wrap(function()
+        local player = game.Players.LocalPlayer
+        
+        -- Function to validate the vehicle and its horsepower
+        local function validateVehicleHorsepower()
+            -- Create the vehicle name using the player's username
+            local vehicleName = player.Name .. "sCar"
+            
+            -- Attempt to find the vehicle
+            local vehicle = workspace.Vehicles:FindFirstChild(vehicleName)
+
+            if not vehicle then
+                warn("Vehicle for player " .. player.Name .. " not found in workspace.Vehicles.")
+                return false
+            else
+                print("Vehicle found: " .. vehicle.Name)
+            end
+
+            -- Attempt to find the Customizeable folder in the vehicle
+            local customizeable = vehicle:FindFirstChild("Customizeable")
+            if not customizeable then
+                warn("Customizeable not found in vehicle " .. vehicle.Name .. ".")
+                return false
+            else
+                print("Customizeable found in vehicle.")
+            end
+
+            -- Attempt to find the Horsepower object in the Customizeable folder
+            local horsepower = customizeable:FindFirstChild("Horsepower")
+            if not horsepower then
+                warn("Horsepower object not found in Customizeable of vehicle " .. vehicle.Name .. ".")
+                return false
+            else
+                print("Horsepower object found.")
+            end
+
+            -- Check if the Horsepower object has a Value property
+            if not horsepower:IsA("NumberValue") and not horsepower:IsA("IntValue") then
+                warn("Horsepower is not a valid IntValue or NumberValue in Customizeable of vehicle " .. vehicle.Name .. ".")
+                return false
+            end
+
+            -- Print the horsepower value
+            print("Horsepower Value found: " .. horsepower.Value)
+            return horsepower.Value -- Return the actual horsepower value if needed
+        end
+
         -- Select Job (Truck)
         local args = { [1] = "Truck" }
         game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))
@@ -76,7 +122,6 @@ local function StartAutoFarmTruck()
 
         -- Function to fly the player to the specified coordinates
         local function flyToCoordinates(cframe, duration)
-            local player = game.Players.LocalPlayer
             local character = player.Character or player.CharacterAdded:Wait() -- Wait for the character to be available
 
             if character then
@@ -122,8 +167,15 @@ local function StartAutoFarmTruck()
             return
         end
 
+        -- Validate Vehicle Horsepower
+        local horsepowerValue = validateVehicleHorsepower()
+
+        if not horsepowerValue then
+            print("Validation failed. Unable to proceed.")
+            return
+        end
+
         -- Local player reference
-        local player = game.Players.LocalPlayer
         local targetHorsepower = 134 -- Set your target horsepower value
         
         while true do
@@ -135,35 +187,19 @@ local function StartAutoFarmTruck()
             if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
                 fireproximityprompt(spawnPrompt)
                 wait(10) -- Wait for the truck to spawn
-        
+
                 -- After trying to spawn, check the vehicle's horsepower
-                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar") -- Access the player's car using their username
-        
-                if vehicle then
-                    local customizeable = vehicle:FindFirstChild("Customizeable") -- Get the Customizeable folder
-                    if customizeable then
-                        local horsepower = customizeable:FindFirstChild("Horsepower") -- Find the Horsepower object
-        
-                        if horsepower then
-                            local value = horsepower:FindFirstChild("Value") -- Find the actual Value object within Horsepower
-                            if value and value:IsA("NumberValue") then
-                                if value.Value == targetHorsepower then
-                                    print("Target horsepower reached. Stopping the loop.")
-                                    break -- Exit the loop if the target horsepower is reached
-                                else
-                                    print("Current horsepower: " .. value.Value .. ", waiting to spawn truck again.")
-                                end
-                            else
-                                warn("Horsepower value not found or invalid in the vehicle.")
-                            end
-                        else
-                            warn("Horsepower object not found in Customizeable of vehicle.")
-                        end
+                local horsepowerValue = validateVehicleHorsepower() -- Validate again after spawning
+                
+                if horsepowerValue then
+                    if horsepowerValue == targetHorsepower then
+                        print("Target horsepower reached. Stopping the loop.")
+                        break -- Exit the loop if the target horsepower is reached
                     else
-                        warn("Customizeable folder not found in vehicle.")
+                        print("Current horsepower: " .. horsepowerValue .. ", waiting to spawn truck again.")
                     end
                 else
-                    warn("Vehicle for player " .. player.Name .. " not found in workspace.")
+                    print("Unable to validate horsepower, waiting to spawn truck again.")
                 end
             else
                 warn("ProximityPrompt for spawning truck not found or invalid.")
@@ -210,25 +246,24 @@ local function StartAutoFarmTruck()
             -- Wait for the Waypoint folder in workspace.Etc
             local waypointFolder = workspace.Etc:WaitForChild("Waypoint")
 
-            -- Wait for the Waypoint object inside the Waypoint folder
-            local waypoint = waypointFolder:WaitForChild("Waypoint")
-
-            -- Get the waypoint CFrame
-            local waypointCFrame = waypoint.CFrame
-            
-            -- Fly to the waypoint
-            flyTo(waypointCFrame)
-
-            -- Use the teleport time input for wait time
-            local waitTime = tonumber(teleportTime) or 1 -- Default to 1 second if input is invalid
-            wait(waitTime) -- Wait for the specified teleport time
+            -- Wait for the Waypoint to be reached
+            while true do
+                if waypointFolder then
+                    local waypointPosition = waypointFolder:FindFirstChild("Waypoint") -- Find the specific waypoint object
+                    if waypointPosition then
+                        flyTo(waypointPosition.CFrame) -- Fly to the waypoint
+                        print("Flying to waypoint...")
+                    else
+                        warn("Waypoint not found.")
+                    end
+                end
+                wait(5) -- Wait before checking again to avoid rapid checks
+            end
         end
 
-        -- GetInPrompt reference
-        local driveSeat = workspace.Vehicles:FindFirstChild(player.Name .. "sCar"):FindFirstChild("DriveSeat") -- Ensure path is correct
-        local getInPrompt = driveSeat and driveSeat:FindFirstChild("PromptDriveSeat") -- Ensure path is correct
-
         -- Connect the GetInPrompt click to the function
+        local getInPrompt = vehicle:FindFirstChild("DriveSeat"):WaitForChild("PromptDriveSeat") -- Ensure path is correct
+
         if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
             getInPrompt.Triggered:Connect(onGetInPromptClicked)
         else
