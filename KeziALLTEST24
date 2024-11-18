@@ -167,14 +167,6 @@ local function StartAutoFarmTruck()
             return
         end
 
-        -- Wait for the vehicle to fully load
-        local vehicle = waitForVehicle()
-        if not vehicle then
-            print("Vehicle loading failed. Exiting AutoFarm.")
-            return
-        end
-
-
         -- Validate Vehicle Horsepower
         local horsepowerValue = validateVehicleHorsepower()
 
@@ -184,7 +176,7 @@ local function StartAutoFarmTruck()
         end
 
         -- Local player reference
-        local targetHorsepower = 134 -- Set your target horsepower value
+        local targetHorsepower = 114 -- Set your target horsepower value
         
         while true do
             -- Spawn Truck (Proximity Prompt)
@@ -316,7 +308,6 @@ local Toggle = AutofarmTab:CreateToggle({
         end
     end
 })
-
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
