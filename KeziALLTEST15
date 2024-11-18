@@ -141,11 +141,8 @@ local function StartAutoFarmTruck()
         end
 
         -- Local player reference
-        local player = game.Players.LocalPlayer -- Get the local player
-        local targetCost = 40100 -- The target cost to check against
-
         local player = game.Players.LocalPlayer -- Reference to the local player
-        local targetCost = 40100 -- Define your target cost
+        local targetHorsepower = 134 -- Define your target horsepower
         
         while true do
             -- Spawn Truck (Proximity Prompt)
@@ -155,22 +152,22 @@ local function StartAutoFarmTruck()
         
             if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
                 fireproximityprompt(spawnPrompt)
-                wait(5) -- Wait for the truck to spawn
+                wait(10) -- Wait for the truck to spawn
                 
-                -- After trying to spawn, check the vehicle's cost
+                -- After trying to spawn, check the vehicle's horsepower
                 local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar") -- Access the player's car using their username
         
                 if vehicle then
-                    local cost = vehicle:FindFirstChild("Cost")
-                    if cost and cost:IsA("NumberValue") then
-                        if cost.Value == targetCost then
-                            print("Target cost reached. Stopping the loop.")
-                            break -- Exit the loop if the target cost is reached
+                    local horsepower = vehicle:FindFirstChild("Customizeable"):FindFirstChild("Horsepower") -- Find the Horsepower value
+                    if horsepower and horsepower:IsA("NumberValue") then
+                        if horsepower.Value == targetHorsepower then
+                            print("Target horsepower reached. Stopping the loop.")
+                            break -- Exit the loop if the target horsepower is reached
                         else
-                            print("Current cost: " .. cost.Value .. ", waiting to spawn truck again.")
+                            print("Current horsepower: " .. horsepower.Value .. ", waiting to spawn truck again.")
                         end
                     else
-                        warn("Cost not found or invalid in the vehicle.")
+                        warn("Horsepower not found or invalid in the vehicle.")
                     end
                 else
                     warn("Vehicle for player not found in workspace.")
@@ -181,7 +178,7 @@ local function StartAutoFarmTruck()
             end
         
             wait(1) -- Wait before checking again to prevent rapid looping
-        end        
+        end          
 
         -- Drive Truck (Proximity Prompt)
         local getInPrompt = workspace.Vehicles.asdqwr2twgwdsCar.DriveSeat:WaitForChild("PromptDriveSeat")  -- Ensure path is correct
