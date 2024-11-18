@@ -140,15 +140,46 @@ local function StartAutoFarmTruck()
             return
         end
 
-        -- Spawn Truck (Proximity Prompt)
-        local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5]:WaitForChild("Part"):WaitForChild("Prompt")  -- Ensure path is correct
-        if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
-            fireproximityprompt(spawnPrompt)
-            wait(10) -- Wait for the truck to spawn
-        else
-            warn("ProximityPrompt for spawning truck not found or invalid.")
-            return
+        -- Local player reference
+        local player = game.Players.LocalPlayer -- Get the local player
+        local targetCost = 40100 -- The target cost to check against
+
+        while true do
+            -- Spawn Truck (Proximity Prompt)
+            local truckJobPath = workspace.Etc.Job.Truck
+            local part = truckJobPath:GetChildren()[5] -- Assuming this is the correct index
+            local spawnPrompt = part:WaitForChild("Part"):WaitForChild("Prompt") -- Ensure path is correct
+
+            if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
+                fireproximityprompt(spawnPrompt)
+                wait(10) -- Wait for the truck to spawn
+                
+                -- After trying to spawn, check the vehicle's cost
+                local vehicle = workspace.Vehicles:FindFirstChild(player.Name) -- Adjust this if the vehicle's name is different
+
+                if vehicle then
+                    local cost = vehicle:FindFirstChild("Cost")
+                    if cost and cost:IsA("NumberValue") then
+                        if cost.Value == targetCost then
+                            print("Target cost reached. Stopping the loop.")
+                            break -- Exit the loop if the target cost is reached
+                        else
+                            print("Current cost: " .. cost.Value .. ", waiting to spawn truck again.")
+                        end
+                    else
+                        warn("Cost not found or invalid in the vehicle.")
+                    end
+                else
+                    warn("Vehicle for player not found in workspace.")
+                end
+            else
+                warn("ProximityPrompt for spawning truck not found or invalid.")
+                return
+            end
+
+            wait(1) -- Wait before checking again to prevent rapid looping
         end
+
 
         -- Drive Truck (Proximity Prompt)
         local getInPrompt = workspace.Vehicles.asdqwr2twgwdsCar.DriveSeat:WaitForChild("PromptDriveSeat")  -- Ensure path is correct
@@ -162,15 +193,6 @@ local function StartAutoFarmTruck()
 
         -- Function to handle the GetInPrompt click
         local function onGetInPromptClicked()
-            -- Define the order of destinations
-            local destinations = {
-                workspace.Etc.Job.Truck.Destination["5"].CFrame,
-                workspace.Etc.Job.Truck.Destination["3"].CFrame,
-                workspace.Etc.Job.Truck.Destination["2"].CFrame,
-                workspace.Etc.Job.Truck.Destination["1"].CFrame,
-                workspace.Etc.Job.Truck.Destination["4"].CFrame,
-            }
-
             -- Function to fly the vehicle to a destination
             local function flyTo(destinationCFrame)
                 local vehicle = game.Players.LocalPlayer.Character:FindFirstChild("YourVehicleName") -- Replace with the actual name of the vehicle model
@@ -181,15 +203,26 @@ local function StartAutoFarmTruck()
                 end
             end
 
-            -- Fly to each destination in order
-            for _, destinationCFrame in ipairs(destinations) do
-                flyTo(destinationCFrame)
-                
-                -- Use the teleport time input for wait time
-                local waitTime = tonumber(teleportTime) or 1 -- Default to 1 second if input is invalid
-                wait(waitTime) -- Wait for the specified teleport time before moving to the next destination
-            end
+            -- Wait for the Waypoint folder in workspace.Etc
+            local waypointFolder = workspace.Etc:WaitForChild("Waypoint")
+
+            -- Wait for the Waypoint object inside the Waypoint folder
+            local waypoint = waypointFolder:WaitForChild("Waypoint")
+
+
+            -- Get the waypoint CFrame
+            local waypointCFrame = waypoint.CFrame
+            
+            -- Fly to the waypoint
+            flyTo(waypointCFrame)
+
+            -- Use the teleport time input for wait time
+            local waitTime = tonumber(teleportTime) or 1 -- Default to 1 second if input is invalid
+            wait(waitTime) -- Wait for the specified teleport time
         end
+
+        -- GetInPrompt reference
+        local getInPrompt = workspace.Vehicles.asdqwr2twgwdsCar.DriveSeat:WaitForChild("PromptDriveSeat") -- Ensure path is correct
 
         -- Connect the GetInPrompt click to the function
         if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
@@ -236,7 +269,6 @@ local Toggle = AutofarmTab:CreateToggle({
         end
     end
 })
-
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames (JAKARTA ONLY)", 4483362458) -- Title and icon
