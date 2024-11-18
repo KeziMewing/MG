@@ -349,6 +349,33 @@ local Toggle = MinigamesTab:CreateToggle({
     end
 })
 
+local SettingsTab = Window:CreateTab("Settings", 4483362458) -- Title and icon
+
+local Input = SettingsTab:CreateInput({
+    Name = "Input Example",
+    CurrentValue = "",
+    PlaceholderText = "Input Server Code",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Input1",
+    Callback = function(Text)
+        -- Define the function to join the private server
+        local function JoinPrivateServer()
+            local args = {
+                [1] = "Join",              -- Action to join
+                [2] = Text,                -- Use the input value directly from the Callback
+                [3] = "JawaTengah"         -- Additional identifier (e.g., game mode or other context)
+            }
+        
+            -- Fire the server with the arguments
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("PrivateServer"):FireServer(unpack(args))
+        end
+
+        -- Call the function to join the private server with the input text
+        JoinPrivateServer()  -- Call the function directly, the server code is already in Text
+    end,
+})
+
+
 -- Persisting UI on Character Reset
 local ScreenGui = Window:GetGui()
 ScreenGui.ResetOnSpawn = false
