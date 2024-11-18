@@ -66,7 +66,7 @@ MinigamesTab:CreateToggle({
 
             -- Detect when the character resets
             player.CharacterAdded:Connect(function()
-                wait(1) -- Wait for the new character to load properly
+                wait(1.5) -- Wait for the new character to load properly
                 if isMiniGameWinActive then -- Only call if mini-game win is still active
                     enterMinigame() -- Re-run the minigame entry
                 end
@@ -109,7 +109,7 @@ local Toggle = MinigamesTab:CreateToggle({
             coroutine.wrap(function()
                 while isMiniGameLoseActive do -- Check if mini-game lose is still active
                     humanoid.Jump = true
-                    wait(0.5) -- Adjust delay as needed
+                    wait(1) -- Adjust delay as needed
                 end
             end)()
         end
@@ -125,7 +125,7 @@ local Toggle = MinigamesTab:CreateToggle({
     
             -- Detect when the character resets
             player.CharacterAdded:Connect(function()
-                wait(1) -- Wait for the new character to load properly
+                wait(1.5) -- Wait for the new character to load properly
                 if isMiniGameLoseActive then -- Only call if mini-game lose is still active
                     enterMinigame() -- Re-run the mini-game entry
                 end
