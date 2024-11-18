@@ -141,8 +141,8 @@ local function StartAutoFarmTruck()
         end
 
         -- Local player reference
-        local player = game.Players.LocalPlayer
-        local targetHorsepower = 134 -- Set your target horsepower value
+        local player = game.Players.LocalPlayer -- Reference to the local player
+        local targetHorsepower = 134 -- Define your target horsepower
         
         while true do
             -- Spawn Truck (Proximity Prompt)
@@ -153,47 +153,35 @@ local function StartAutoFarmTruck()
             if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
                 fireproximityprompt(spawnPrompt)
                 wait(10) -- Wait for the truck to spawn
-        
+                
                 -- After trying to spawn, check the vehicle's horsepower
                 local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar") -- Access the player's car using their username
         
                 if vehicle then
-                    local customizeable = vehicle:FindFirstChild("Customizeable") -- Get the Customizeable folder
-                    if customizeable then
-                        local horsepower = customizeable:FindFirstChild("Horsepower") -- Find the Horsepower object
-        
-                        if horsepower then
-                            local value = horsepower:FindFirstChild("Value") -- Find the actual Value object within Horsepower
-                            if value and value:IsA("NumberValue") then
-                                if value.Value == targetHorsepower then
-                                    print("Target horsepower reached. Stopping the loop.")
-                                    break -- Exit the loop if the target horsepower is reached
-                                else
-                                    print("Current horsepower: " .. value.Value .. ", waiting to spawn truck again.")
-                                end
-                            else
-                                warn("Horsepower value not found or invalid in the vehicle.")
-                            end
+                    local horsepower = vehicle:FindFirstChild("Customizeable"):FindFirstChild("Horsepower") -- Find the Horsepower value
+                    if horsepower and horsepower:IsA("NumberValue") then
+                        if horsepower.Value == targetHorsepower then
+                            print("Target horsepower reached. Stopping the loop.")
+                            break -- Exit the loop if the target horsepower is reached
                         else
-                            warn("Horsepower object not found in Customizeable of vehicle.")
+                            print("Current horsepower: " .. horsepower.Value .. ", waiting to spawn truck again.")
                         end
                     else
-                        warn("Customizeable folder not found in vehicle.")
+                        warn("Horsepower not found or invalid in the vehicle.")
                     end
                 else
-                    warn("Vehicle for player " .. player.Name .. " not found in workspace.")
+                    warn("Vehicle for player not found in workspace.")
                 end
             else
                 warn("ProximityPrompt for spawning truck not found or invalid.")
                 return
             end
         
-            wait(5) -- Wait before checking again to prevent rapid looping
-        end
-        
+            wait(1) -- Wait before checking again to prevent rapid looping
+        end          
 
         -- Drive Truck (Proximity Prompt)
-        local getInPrompt = workspace.Vehicles.(player.Name .. "sCar").DriveSeat:WaitForChild("PromptDriveSeat")  -- Ensure path is correct
+        local getInPrompt = workspace.Vehicles.asdqwr2twgwdsCar.DriveSeat:WaitForChild("PromptDriveSeat")  -- Ensure path is correct
         if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
             fireproximityprompt(getInPrompt)
             wait(10) -- Wait for the driving prompt to execute
