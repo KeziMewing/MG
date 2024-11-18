@@ -1,0 +1,37 @@
+-- Create a button for joining the private server
+local Button = SettingsTab:CreateButton({
+    Name = "Join Private Server",
+    Callback = function()
+        local TeleportService = game:GetService("TeleportService")
+        local serverCode = Input.CurrentValue -- Retrieve the current value from the input field
+
+        -- Check if server code is valid
+        if not (serverCode and serverCode ~= "") then
+            print("Please enter a valid server code.")  -- Optional: handle empty input
+            return
+        end
+
+        -- Function to join the private server using the input value
+        local function JoinPrivateServer()
+            local args = {
+                [1] = "Join",              -- Action to join
+                [2] = serverCode,          -- Use the server code provided by the user
+                [3] = "JawaTengah"         -- Additional identifier (e.g., game mode or other context)
+            }
+
+            -- Fire the server with the arguments
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("PrivateServer"):FireServer(unpack(args))
+        end
+
+        -- Teleport to the specified place first
+        TeleportService:Teleport(6911148748, game.Players.LocalPlayer)  -- Teleporting to the specified Place ID
+
+        -- Listen for the player's character being added after teleporting
+        game.Players.LocalPlayer.CharacterAdded:Wait()  -- Wait for the character to load
+
+        -- Re-run the JoinPrivateServer function automatically after teleporting
+        JoinPrivateServer()  -- Call the function to join the private server
+    end,
+})
+
+-- Note: Since Vega X supports auto re-run, this should automatically re-run the script upon teleportation.
