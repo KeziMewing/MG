@@ -30,7 +30,7 @@ local teleportTime = "" -- Initialize teleport time variable
 -- Dropdown for job selection
 local Dropdown = AutofarmTab:CreateDropdown({
     Name = "Select Job",
-    Options = {"Truck"}, -- Added more options if needed
+    Options = {"Truck"}, -- Add more options if needed
     CurrentOption = {"Truck"},
     MultipleOptions = false,
     Flag = "Dropdown1",
@@ -55,18 +55,14 @@ local Input = AutofarmTab:CreateInput({
 local function StartAutoFarmTruck()
     coroutine.wrap(function()
         -- Select Job (Truck)
-        local args = {
-            [1] = "Truck"
-        }
+        local args = { [1] = "Truck" }
         game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))
 
         -- Wait for the job selection to complete
         wait(2) -- Adjust the wait time as needed
 
         -- Teleport to Cirebon
-        local teleportArgs = {
-            [1] = "Cirebon"  -- Changed to Cirebon
-        }
+        local teleportArgs = { [1] = "Cirebon" }  -- Changed to Cirebon
         game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("TransEvent"):FireServer(unpack(teleportArgs))
 
         -- Wait for teleportation to complete
@@ -115,7 +111,6 @@ local function StartAutoFarmTruck()
 
         -- Call the function to fly to the target coordinates
         flyToCoordinates(targetCFrame, flyDuration)
-
 
         -- Start Job (Proximity Prompt)
         local startPrompt = workspace.Etc.Job.Truck.Starter:WaitForChild("Prompt")  -- Ensure path is correct
@@ -177,15 +172,26 @@ local function StartAutoFarmTruck()
         
             wait(5) -- Wait before checking again to prevent rapid looping
         end
-        
 
         -- Drive Truck (Proximity Prompt)
-        local getInPrompt = workspace.Vehicles.(player.Name .. "sCar").DriveSeat:WaitForChild("PromptDriveSeat")  -- Ensure path is correct
-        if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
-            fireproximityprompt(getInPrompt)
-            wait(10) -- Wait for the driving prompt to execute
+        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar") -- Access the player's vehicle
+        if vehicle then
+            local driveSeat = vehicle:FindFirstChild("DriveSeat") -- Access the DriveSeat
+            if driveSeat then
+                local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")  -- Ensure path is correct
+                if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
+                    fireproximityprompt(getInPrompt)
+                    wait(10) -- Wait for the driving prompt to execute
+                else
+                    warn("ProximityPrompt for driving truck not found or invalid.")
+                    return
+                end
+            else
+                warn("DriveSeat not found in vehicle.")
+                return
+            end
         else
-            warn("ProximityPrompt for driving truck not found or invalid.")
+            warn("Vehicle not found.")
             return
         end
 
@@ -193,7 +199,7 @@ local function StartAutoFarmTruck()
         local function onGetInPromptClicked()
             -- Function to fly the vehicle to a destination
             local function flyTo(destinationCFrame)
-                local vehicle = game.Players.LocalPlayer.Character:FindFirstChild("YourVehicleName") -- Replace with the actual name of the vehicle model
+                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar") -- Access the player's vehicle
                 if vehicle and vehicle:FindFirstChild("HumanoidRootPart") then
                     vehicle:SetPrimaryPartCFrame(destinationCFrame)
                 else
@@ -207,7 +213,6 @@ local function StartAutoFarmTruck()
             -- Wait for the Waypoint object inside the Waypoint folder
             local waypoint = waypointFolder:WaitForChild("Waypoint")
 
-
             -- Get the waypoint CFrame
             local waypointCFrame = waypoint.CFrame
             
@@ -220,7 +225,8 @@ local function StartAutoFarmTruck()
         end
 
         -- GetInPrompt reference
-        local getInPrompt = workspace.Vehicles.asdqwr2twgwdsCar.DriveSeat:WaitForChild("PromptDriveSeat") -- Ensure path is correct
+        local driveSeat = workspace.Vehicles:FindFirstChild(player.Name .. "sCar"):FindFirstChild("DriveSeat") -- Ensure path is correct
+        local getInPrompt = driveSeat and driveSeat:FindFirstChild("PromptDriveSeat") -- Ensure path is correct
 
         -- Connect the GetInPrompt click to the function
         if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
@@ -267,7 +273,6 @@ local Toggle = AutofarmTab:CreateToggle({
         end
     end
 })
-
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
