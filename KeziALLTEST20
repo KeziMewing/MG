@@ -5,19 +5,6 @@ game:GetService("Players").LocalPlayer.Idled:Connect(function()
     vu:ClickButton2(Vector2.new())
 end)
 
--- ServerLock Message
-local function sendChatMessage(message)
-    local player = game.Players.LocalPlayer
-    local chatService = game:GetService("Chat")
-
-    -- Use the Chat service to send a message
-    chatService:Chat(player.Character.Head, message, Enum.ChatColor.Blue)
-end
-
--- Sending the "/serverlock" command
-sendChatMessage("/serverlock")
-print("Sent the command: /serverlock")
-
 -- Rayfield Library
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -281,8 +268,9 @@ local Toggle = AutofarmTab:CreateToggle({
     end
 })
 
+
 -- Tab for Minigames
-local MinigamesTab = Window:CreateTab("Minigames (JAKARTA ONLY)", 4483362458) -- Title and icon
+local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
 
 -- Button to Buy Hiace
 MinigamesTab:CreateButton({
@@ -317,6 +305,15 @@ MinigamesTab:CreateToggle({
             game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
         end
 
+        local function leaveMinigame()
+            local args = {
+                [1] = "Leave",
+                [2] = "2020Hiace"
+            }
+            
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+        end
+
         if Value then
             -- Set the mini-game win active flag to true
             isMiniGameWinActive = true
@@ -326,7 +323,7 @@ MinigamesTab:CreateToggle({
 
             -- Detect when the character resets
             player.CharacterAdded:Connect(function()
-                wait(1) -- Wait for the new character to load properly
+                wait(1.5) -- Wait for the new character to load properly
                 if isMiniGameWinActive then -- Only call if mini-game win is still active
                     enterMinigame() -- Re-run the minigame entry
                 end
@@ -341,6 +338,8 @@ MinigamesTab:CreateToggle({
             
             -- Set the mini-game win active flag to false
             isMiniGameWinActive = false
+
+            leaveMinigame()
         end
     end
 })
@@ -369,9 +368,18 @@ local Toggle = MinigamesTab:CreateToggle({
             coroutine.wrap(function()
                 while isMiniGameLoseActive do -- Check if mini-game lose is still active
                     humanoid.Jump = true
-                    wait(0.5) -- Adjust delay as needed
+                    wait(1) -- Adjust delay as needed
                 end
             end)()
+        end
+
+        local function leaveMinigame()
+            local args = {
+                [1] = "Leave",
+                [2] = "2020Hiace"
+            }
+            
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
         end
     
         if Value then
@@ -385,7 +393,7 @@ local Toggle = MinigamesTab:CreateToggle({
     
             -- Detect when the character resets
             player.CharacterAdded:Connect(function()
-                wait(1) -- Wait for the new character to load properly
+                wait(1.5) -- Wait for the new character to load properly
                 if isMiniGameLoseActive then -- Only call if mini-game lose is still active
                     enterMinigame() -- Re-run the mini-game entry
                 end
@@ -401,10 +409,11 @@ local Toggle = MinigamesTab:CreateToggle({
     
             -- Set the mini-game lose active flag to false
             isMiniGameLoseActive = false
+
+            leaveMinigame()
         end
     end
 })
-
 
 -- Persisting UI on Character Reset
 local ScreenGui = Window:GetGui()
