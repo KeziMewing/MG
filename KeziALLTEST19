@@ -281,7 +281,6 @@ local Toggle = AutofarmTab:CreateToggle({
     end
 })
 
-
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames (JAKARTA ONLY)", 4483362458) -- Title and icon
 
