@@ -352,33 +352,34 @@ local Toggle = MinigamesTab:CreateToggle({
 -- Tab for Settings
 local SettingsTab = Window:CreateTab("Settings", 4483362458) -- Title and icon
 
--- Create an Input for the server code
+-- Create input for server code
 local Input = SettingsTab:CreateInput({
     Name = "Input Server Code",
-    CurrentValue = "", -- This holds the current input value
-    PlaceholderText = "Input Server Code", -- Placeholder for the input field
-    RemoveTextAfterFocusLost = false, -- Keep the text after losing focus
-    Flag = "Input1", -- Unique flag for this input field
+    CurrentValue = "",
+    PlaceholderText = "Enter Private Server Code",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Input1",
     Callback = function(Text)
-        -- This callback updates the CurrentValue property when input changes
-        Input.CurrentValue = Text -- Store the current input value
+        -- Store the current value of the input for later use
+        Input.CurrentValue = Text
     end,
 })
 
--- Create a button for joining the private server
+-- Create a button to start the auto rejoin process
 local Button = SettingsTab:CreateButton({
-    Name = "Join Private Server",
+    Name = "Start Auto Rejoin",
     Callback = function()
-        local TeleportService = game:GetService("TeleportService")
-        local serverCode = Input.CurrentValue -- Retrieve the current value from the input field
+        local serverCode = Input.CurrentValue  -- Retrieve the current value from the input field
 
-        -- Check if server code is valid
+        -- Check if the server code is valid
         if not (serverCode and serverCode ~= "") then
-            print("Please enter a valid server code.")  -- Optional: handle empty input
+            print("Please enter a valid server code.")  -- Handle empty input
             return
         end
 
-        -- Function to join the private server using the input value
+        print("Auto Rejoin started for server code: " .. serverCode)
+
+        -- Function to join the private server
         local function JoinPrivateServer()
             local args = {
                 [1] = "Join",              -- Action to join
@@ -390,18 +391,25 @@ local Button = SettingsTab:CreateButton({
             game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("PrivateServer"):FireServer(unpack(args))
         end
 
-        -- Teleport to the specified place first
-        TeleportService:Teleport(6911148748, game.Players.LocalPlayer)  -- Teleporting to the specified Place ID
+        -- Function to handle rejoining
+        local function AutoRejoin()
+            while true do
+                wait(5)  -- Wait before rejoining to prevent spam
+                print("Attempting to rejoin server...")
+                JoinPrivateServer()  -- Call the function to join the private server
+            end
+        end
 
-        -- Listen for the player's character being added after teleporting
-        game.Players.LocalPlayer.CharacterAdded:Wait()  -- Wait for the character to load
+        -- Listen for character reset
+        game.Players.LocalPlayer.CharacterAdded:Connect(function()
+            print("Character has been reset, attempting to rejoin...")
+            JoinPrivateServer()  -- Rejoin the private server
+        end)
 
-        -- Re-run the JoinPrivateServer function automatically after teleporting
-        JoinPrivateServer()  -- Call the function to join the private server
+        -- Start the auto rejoin loop
+        AutoRejoin()  -- Begin the auto rejoin process
     end,
 })
-
--- Note: Since Vega X supports auto re-run, this should automatically re-run the script upon teleportation.
 
 
 -- Persisting UI on Character Reset
