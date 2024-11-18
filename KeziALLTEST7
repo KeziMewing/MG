@@ -349,20 +349,31 @@ local Toggle = MinigamesTab:CreateToggle({
     end
 })
 
+-- Tab for Settings
 local SettingsTab = Window:CreateTab("Settings", 4483362458) -- Title and icon
 
+-- Create an Input for the server code
 local Input = SettingsTab:CreateInput({
-    Name = "Input Example",
-    CurrentValue = "",
-    PlaceholderText = "Input Server Code",
-    RemoveTextAfterFocusLost = false,
-    Flag = "Input1",
+    Name = "Input Server Code",
+    CurrentValue = "", -- This holds the current input value
+    PlaceholderText = "Input Server Code", -- Placeholder for the input field
+    RemoveTextAfterFocusLost = false, -- Keep the text after losing focus
+    Flag = "Input1", -- Unique flag for this input field
     Callback = function(Text)
-        -- Define the function to join the private server
-        local function JoinPrivateServer()
+        -- This callback updates the CurrentValue property when input changes
+        Input.CurrentValue = Text -- Store the current input value
+    end,
+})
+
+-- Create a button for joining the private server
+local Button = SettingsTab:CreateButton({
+    Name = "Join Private Server",
+    Callback = function()
+        -- Function to join the private server using the input value
+        local function JoinPrivateServer(serverCode)
             local args = {
                 [1] = "Join",              -- Action to join
-                [2] = Text,                -- Use the input value directly from the Callback
+                [2] = serverCode,          -- Use the server code provided by the user
                 [3] = "JawaTengah"         -- Additional identifier (e.g., game mode or other context)
             }
         
@@ -370,11 +381,17 @@ local Input = SettingsTab:CreateInput({
             game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("PrivateServer"):FireServer(unpack(args))
         end
 
+        -- Get the input value from the input field
+        local serverCode = Input.CurrentValue -- Retrieve the current value from the input field
+
         -- Call the function to join the private server with the input text
-        JoinPrivateServer()  -- Call the function directly, the server code is already in Text
+        if serverCode and serverCode ~= "" then
+            JoinPrivateServer(serverCode)  -- Pass the server code to the function
+        else
+            print("Please enter a valid server code.")  -- Optional: handle empty input
+        end
     end,
 })
-
 
 -- Persisting UI on Character Reset
 local ScreenGui = Window:GetGui()
