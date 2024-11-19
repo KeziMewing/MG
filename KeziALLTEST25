@@ -58,94 +58,76 @@ local function StartAutoFarmTruck()
         
         -- Function to validate the vehicle and its horsepower
         local function validateVehicleHorsepower()
-            -- Create the vehicle name using the player's username
             local vehicleName = player.Name .. "sCar"
-            
-            -- Attempt to find the vehicle
             local vehicle = workspace.Vehicles:FindFirstChild(vehicleName)
 
             if not vehicle then
                 warn("Vehicle for player " .. player.Name .. " not found in workspace.Vehicles.")
                 return false
-            else
-                print("Vehicle found: " .. vehicle.Name)
             end
 
-            -- Attempt to find the Customizeable folder in the vehicle
             local customizeable = vehicle:FindFirstChild("Customizeable")
             if not customizeable then
                 warn("Customizeable not found in vehicle " .. vehicle.Name .. ".")
                 return false
-            else
-                print("Customizeable found in vehicle.")
             end
 
-            -- Attempt to find the Horsepower object in the Customizeable folder
             local horsepower = customizeable:FindFirstChild("Horsepower")
             if not horsepower then
                 warn("Horsepower object not found in Customizeable of vehicle " .. vehicle.Name .. ".")
                 return false
-            else
-                print("Horsepower object found.")
             end
 
-            -- Check if the Horsepower object has a Value property
             if not horsepower:IsA("NumberValue") and not horsepower:IsA("IntValue") then
                 warn("Horsepower is not a valid IntValue or NumberValue in Customizeable of vehicle " .. vehicle.Name .. ".")
                 return false
             end
 
-            -- Print the horsepower value
             print("Horsepower Value found: " .. horsepower.Value)
-            return horsepower.Value -- Return the actual horsepower value if needed
+            return horsepower.Value -- Return the actual horsepower value
         end
 
         -- Select Job (Truck)
         local args = { [1] = "Truck" }
         game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))
 
-        -- Wait for the job selection to complete
-        wait(2) -- Adjust the wait time as needed
+        -- Function to fly the player to the specified waypoint
+        local player = game.Players.LocalPlayer
 
-        -- Teleport to Cirebon
-        local teleportArgs = { [1] = "Cirebon" }  -- Changed to Cirebon
-        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("TransEvent"):FireServer(unpack(teleportArgs))
-
-        -- Wait for teleportation to complete
-        wait(2) -- Adjust the wait time as needed
-
-        -- Fly to Coordinates Script
-        local targetCFrame = CFrame.new(-21774.8652, 1042.03174, -26777.4453, -0.166060805, 0, -0.986115515, 0, 1, 0, 0.986115515, 0, -0.166060805)
-
-        -- Duration for flying to the target coordinates (in seconds)
-        local flyDuration = 15
-
-        -- Function to fly the player to the specified coordinates
-        local function flyToCoordinates(cframe, duration)
-            local character = player.Character or player.CharacterAdded:Wait() -- Wait for the character to be available
-
+        -- Function to fly the player to the specified waypoint
+        local function flyToWaypoint(duration)
+            local character = player.Character or player.CharacterAdded:Wait() -- Wait for the player's character to be available
+        
             if character then
                 local humanoidRootPart = character:FindFirstChild("HumanoidRootPart") -- Find the HumanoidRootPart
-
+        
                 if humanoidRootPart then
-                    local startCFrame = humanoidRootPart.CFrame
-                    local endCFrame = cframe
-                    local startTime = tick() -- Record the starting time
-
-                    -- Loop until the duration has passed
-                    while tick() - startTime < duration do
-                        local elapsedTime = tick() - startTime
-                        local alpha = elapsedTime / duration -- Calculate the proportion of time passed
-
-                        -- Interpolate the CFrame smoothly
-                        humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, alpha)
-
-                        wait(0.03) -- Wait for a short time to create a smooth movement
+                    -- Wait for the Waypoint in the workspace
+                    local waypoint = workspace.Etc:WaitForChild("Waypoint"):WaitForChild("Waypoint")
+        
+                    -- Ensure the waypoint exists
+                    if waypoint then
+                        local startCFrame = humanoidRootPart.CFrame -- Get the starting CFrame
+                        local endCFrame = waypoint.CFrame -- Get the CFrame of the waypoint
+                        local startTime = tick() -- Record the starting time
+        
+                        -- Loop until the duration has passed
+                        while tick() - startTime < duration do
+                            local elapsedTime = tick() - startTime
+                            local alpha = elapsedTime / duration -- Calculate the proportion of time passed
+        
+                            -- Interpolate the CFrame smoothly
+                            humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, alpha)
+        
+                            wait(0.03) -- Wait for a short time to create a smooth movement
+                        end
+        
+                        -- Ensure the HumanoidRootPart ends exactly at the target CFrame
+                        humanoidRootPart.CFrame = endCFrame
+                        print("Arrived at coordinates:", waypoint.Position) -- Log the arrival
+                    else
+                        warn("Waypoint not found in workspace.")
                     end
-
-                    -- Ensure the HumanoidRootPart ends exactly at the target CFrame
-                    humanoidRootPart.CFrame = endCFrame
-                    print("Arrived at coordinates:", cframe.Position) -- Log the arrival
                 else
                     warn("HumanoidRootPart not found for player.")
                 end
@@ -153,12 +135,17 @@ local function StartAutoFarmTruck()
                 warn("Character not found.")
             end
         end
-
-        -- Call the function to fly to the target coordinates
-        flyToCoordinates(targetCFrame, flyDuration)
+        
+        -- Example function call to fly to the waypoint
+        local function startFlyingToWaypoint()
+            local flyDuration = 15 -- Duration in seconds
+        end
+        
+        -- Call the function to start flying to the waypoint when needed
+        startFlyingToWaypoint(15)        
 
         -- Start Job (Proximity Prompt)
-        local startPrompt = workspace.Etc.Job.Truck.Starter:WaitForChild("Prompt")  -- Ensure path is correct
+        local startPrompt = workspace.Etc.Job.Truck.Starter:WaitForChild("Prompt")
         if startPrompt and startPrompt:IsA("ProximityPrompt") then
             fireproximityprompt(startPrompt)
             wait(10) -- Wait for the job to start
@@ -167,32 +154,25 @@ local function StartAutoFarmTruck()
             return
         end
 
-        -- Validate Vehicle Horsepower
-        local horsepowerValue = validateVehicleHorsepower()
-
-        if not horsepowerValue then
-            print("Validation failed. Unable to proceed.")
-            return
-        end
-
-        -- Local player reference
-        local targetHorsepower = 114 -- Set your target horsepower value
+        -- Target horsepower values
+        local targetHorsepower = {114, 134}
         
         while true do
             -- Spawn Truck (Proximity Prompt)
             local truckJobPath = workspace.Etc.Job.Truck
-            local part = truckJobPath:GetChildren()[5] -- Assuming this is the correct index
-            local spawnPrompt = part:WaitForChild("Part"):WaitForChild("Prompt") -- Ensure path is correct
-        
+            local part = truckJobPath:GetChildren()[5]
+            local spawnPrompt = part:WaitForChild("Part"):WaitForChild("Prompt")
+
             if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
                 fireproximityprompt(spawnPrompt)
-                wait(10) -- Wait for the truck to spawn
+                wait(10)
 
                 -- After trying to spawn, check the vehicle's horsepower
-                local horsepowerValue = validateVehicleHorsepower() -- Validate again after spawning
+                local horsepowerValue = validateVehicleHorsepower()
                 
                 if horsepowerValue then
-                    if horsepowerValue == targetHorsepower then
+                    -- Check if the current horsepower matches any of the target values
+                    if table.find(targetHorsepower, horsepowerValue) then
                         print("Target horsepower reached. Stopping the loop.")
                         break -- Exit the loop if the target horsepower is reached
                     else
@@ -206,18 +186,18 @@ local function StartAutoFarmTruck()
                 return
             end
         
-            wait(5) -- Wait before checking again to prevent rapid looping
+            wait(1) -- Wait before checking again to prevent rapid looping
         end
 
         -- Drive Truck (Proximity Prompt)
-        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar") -- Access the player's vehicle
+        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar")
         if vehicle then
-            local driveSeat = vehicle:FindFirstChild("DriveSeat") -- Access the DriveSeat
+            local driveSeat = vehicle:FindFirstChild("DriveSeat")
             if driveSeat then
-                local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")  -- Ensure path is correct
+                local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
                 if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
                     fireproximityprompt(getInPrompt)
-                    wait(10) -- Wait for the driving prompt to execute
+                    wait(10)
                 else
                     warn("ProximityPrompt for driving truck not found or invalid.")
                     return
@@ -231,44 +211,59 @@ local function StartAutoFarmTruck()
             return
         end
 
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local player = game.Players.LocalPlayer
+        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar")
+        
+        -- Get the Job module
+        local jobModule = require(ReplicatedStorage.Modules.Job)
+        
+        -- Store the original SetDestination function (if needed later)
+        local originalSetDestination = jobModule.SetDestination
+        
+        -- Override the SetDestination function
+        function jobModule:SetDestination(destination)
+            -- Set the destination to the CFrame of the specified location
+            local customDestinationCFrame = workspace.Etc.Job.Truck.Destination["5"].CFrame
+            
+            -- Print to the console for debugging
+            print("Setting custom destination to:", customDestinationCFrame.Position)
+            
+            -- Move the vehicle to the custom destination
+            if vehicle then
+                local chassis = vehicle:FindFirstChild("A-Chassis Tune")
+                local vehicleSeat = vehicle:FindFirstChild("DriveSeat")
+        
+                if chassis and vehicleSeat then
+                    chassis:SetPrimaryPartCFrame(customDestinationCFrame) -- Move the chassis to the destination
+                    vehicleSeat.CFrame = customDestinationCFrame -- Ensure the seat is also updated
+                    print("Vehicle has been moved to the destination:", customDestinationCFrame.Position)
+                else
+                    warn("Chassis or VehicleSeat not found in the vehicle.")
+                end
+            else
+                warn("Vehicle not found.")
+            end
+        end
+        
         -- Function to handle the GetInPrompt click
         local function onGetInPromptClicked()
-            -- Function to fly the vehicle to a destination
-            local function flyTo(destinationCFrame)
-                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar") -- Access the player's vehicle
-                if vehicle and vehicle:FindFirstChild("HumanoidRootPart") then
-                    vehicle:SetPrimaryPartCFrame(destinationCFrame)
-                else
-                    warn("Vehicle not found or does not have a HumanoidRootPart.")
-                end
-            end
-
-            -- Wait for the Waypoint folder in workspace.Etc
-            local waypointFolder = workspace.Etc:WaitForChild("Waypoint")
-
-            -- Wait for the Waypoint to be reached
-            while true do
-                if waypointFolder then
-                    local waypointPosition = waypointFolder:FindFirstChild("Waypoint") -- Find the specific waypoint object
-                    if waypointPosition then
-                        flyTo(waypointPosition.CFrame) -- Fly to the waypoint
-                        print("Flying to waypoint...")
-                    else
-                        warn("Waypoint not found.")
-                    end
-                end
-                wait(5) -- Wait before checking again to avoid rapid checks
-            end
+            -- Call the overridden SetDestination function
+            jobModule:SetDestination() -- This will now use the custom logic
         end
-
+        
         -- Connect the GetInPrompt click to the function
-        local getInPrompt = vehicle:FindFirstChild("DriveSeat"):WaitForChild("PromptDriveSeat") -- Ensure path is correct
-
-        if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
-            getInPrompt.Triggered:Connect(onGetInPromptClicked)
+        if vehicle then
+            local getInPrompt = vehicle:FindFirstChild("DriveSeat"):WaitForChild("PromptDriveSeat")
+            
+            if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
+                getInPrompt.Triggered:Connect(onGetInPromptClicked)
+            else
+                warn("GetInPrompt not found or invalid.")
+            end
         else
-            warn("GetInPrompt not found or invalid.")
-        end
+            warn("Vehicle not found.")
+        end        
 
     end)() -- Invoke the coroutine immediately
 end
@@ -453,6 +448,22 @@ local Toggle = MinigamesTab:CreateToggle({
             leaveMinigame()
         end
     end
+})
+
+-- Tab for Settings
+local SettingsTab = Window:CreateTab("Tab Example", 4483362458) -- Title, Image
+
+local Dropdown = SettingsTab:CreateDropdown({
+    Name = "Theme Selector",
+    Options = {"Default","AmberGlow","Amethyst","Bloom","DarkBlue","Green","Light","Ocean","Serenity"},
+    CurrentOption = {"Default"},
+    MultipleOptions = false,
+    Flag = "Dropdown1", -- A flag is the identifier for the configuration file
+    Callback = function(Options)
+        if #Options > 0 then -- Check if there are selected options
+            Window:ModifyTheme(Options[1]) -- Pass the first option to ModifyTheme
+        end
+    end,
 })
 
 -- Persisting UI on Character Reset
