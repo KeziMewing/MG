@@ -103,7 +103,8 @@ local function StartAutoFarmTruck()
         
                 if humanoidRootPart then
                     -- Wait for the Waypoint in the workspace
-                    local waypoint = workspace.Etc:WaitForChild("Waypoint"):WaitForChild("Waypoint")
+                    local waypointfolder = workspace.Etc:WaitForChild("Waypoint")
+                    local waypoint = waypointfolder:WaitForChild("Waypoint")
         
                     -- Ensure the waypoint exists
                     if waypoint then
@@ -451,18 +452,17 @@ local Toggle = MinigamesTab:CreateToggle({
 })
 
 -- Tab for Settings
-local SettingsTab = Window:CreateTab("Tab Example", 4483362458) -- Title, Image
+local SettingsTab = Window:CreateTab("Settings", 4483362458) -- Title, Image
 
 local Dropdown = SettingsTab:CreateDropdown({
     Name = "Theme Selector",
-    Options = {"Default","AmberGlow","Amethyst","Bloom","DarkBlue","Green","Light","Ocean","Serenity"},
+    Options = {"Default", "AmberGlow", "Amethyst", "Bloom", "DarkBlue", "Green", "Light", "Ocean", "Serenity"},
     CurrentOption = {"Default"},
     MultipleOptions = false,
     Flag = "Dropdown1", -- A flag is the identifier for the configuration file
     Callback = function(Options)
-        if #Options > 0 then -- Check if there are selected options
-            Window:ModifyTheme(Options[1]) -- Pass the first option to ModifyTheme
-        end
+        -- Directly use the selected option to modify the theme
+        Window:ModifyTheme(Options[1]) -- Change the theme immediately based on the selected option
     end,
 })
 
