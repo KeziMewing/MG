@@ -56,48 +56,7 @@ local function StartAutoFarmTruck()
     coroutine.wrap(function()
         local player = game.Players.LocalPlayer
         
-        -- Function to validate the vehicle and its horsepower
-        local function validateVehicleHorsepower()
-            local vehicleName = player.Name .. "sCar"
-            local vehicle = workspace.Vehicles:FindFirstChild(vehicleName)
-
-            if not vehicle then
-                warn("Vehicle for player " .. player.Name .. " not found in workspace.Vehicles.")
-                return false
-            end
-
-            local customizeable = vehicle:FindFirstChild("Customizeable")
-            if not customizeable then
-                warn("Customizeable not found in vehicle " .. vehicle.Name .. ".")
-                return false
-            end
-
-            local horsepower = customizeable:FindFirstChild("Horsepower")
-            if not horsepower then
-                warn("Horsepower object not found in Customizeable of vehicle " .. vehicle.Name .. ".")
-                return false
-            end
-
-            if not horsepower:IsA("NumberValue") and not horsepower:IsA("IntValue") then
-                warn("Horsepower is not a valid IntValue or NumberValue in Customizeable of vehicle " .. vehicle.Name .. ".")
-                return false
-            end
-
-            print("Horsepower Value found: " .. horsepower.Value)
-            return horsepower.Value -- Return the actual horsepower value
-        end
-
-        -- Select Job (Truck)
-        local args = { [1] = "Truck" }
-        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))
-
         -- Function to fly the player to the specified waypoint
-        local player = game.Players.LocalPlayer
-
-        -- Function to fly the player to the specified waypoint
-        local player = game.Players.LocalPlayer
-
-        -- Function to fly to a waypoint
         local function flyToWaypoint(duration)
             local character = player.Character or player.CharacterAdded:Wait() -- Wait for the player's character to be available
 
@@ -128,7 +87,7 @@ local function StartAutoFarmTruck()
 
                         -- Ensure the HumanoidRootPart ends exactly at the target CFrame
                         humanoidRootPart.CFrame = endCFrame
-                        print("Arrived at coordinates:", waypoint.Position) -- Log the arrival
+                        print("Arrived at waypoint:", waypoint.Position) -- Log the arrival
                     else
                         warn("Waypoint not found in workspace.")
                     end
@@ -142,56 +101,38 @@ local function StartAutoFarmTruck()
 
         -- Example function call to fly to the waypoint
         local function startFlyingToWaypoint()
-            local flyDuration = 15 -- Duration in seconds
+            local flyDuration = 15 -- Duration in seconds (you can adjust this)
             flyToWaypoint(flyDuration) -- Call the flyToWaypoint function with the duration
         end
 
-        -- Call the function to start flying to the waypoint when needed
+        -- Call the function to start flying to the waypoint
         startFlyingToWaypoint()
 
-        -- Start Job (Proximity Prompt)
-        local startPrompt = workspace.Etc.Job.Truck.Starter:WaitForChild("Prompt")
-        if startPrompt and startPrompt:IsA("ProximityPrompt") then
-            fireproximityprompt(startPrompt)
-            wait(10) -- Wait for the job to start
+        -- Get the Job module
+        local jobModule = require(game:GetService("ReplicatedStorage").Modules.Job) -- Get the Job module
+        local destinationCFrame = workspace.Etc.Job.Truck.Destination["5"].CFrame -- Custom destination CFrame
+
+        -- Set the destination using the Job module
+        jobModule:SetDestination(destinationCFrame)
+
+        -- Start Job (Fire the server event)
+        local args = { [1] = "Truck" }
+        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))
+
+        -- Wait for a moment to ensure the job has been set
+        wait(2)
+
+        -- Spawn Truck (Proximity Prompt)
+        local truckJobPath = workspace.Etc.Job.Truck
+        local part = truckJobPath:GetChildren()[5]
+        local spawnPrompt = part:WaitForChild("Part"):WaitForChild("Prompt")
+
+        if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
+            fireproximityprompt(spawnPrompt)
+            wait(10) -- Wait for the truck to spawn
         else
-            warn("ProximityPrompt for starting job not found or invalid.")
+            warn("ProximityPrompt for spawning truck not found or invalid.")
             return
-        end
-
-        -- Target horsepower values
-        local targetHorsepower = {114, 134}
-        
-        while true do
-            -- Spawn Truck (Proximity Prompt)
-            local truckJobPath = workspace.Etc.Job.Truck
-            local part = truckJobPath:GetChildren()[5]
-            local spawnPrompt = part:WaitForChild("Part"):WaitForChild("Prompt")
-
-            if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
-                fireproximityprompt(spawnPrompt)
-                wait(10)
-
-                -- After trying to spawn, check the vehicle's horsepower
-                local horsepowerValue = validateVehicleHorsepower()
-                
-                if horsepowerValue then
-                    -- Check if the current horsepower matches any of the target values
-                    if table.find(targetHorsepower, horsepowerValue) then
-                        print("Target horsepower reached. Stopping the loop.")
-                        break -- Exit the loop if the target horsepower is reached
-                    else
-                        print("Current horsepower: " .. horsepowerValue .. ", waiting to spawn truck again.")
-                    end
-                else
-                    print("Unable to validate horsepower, waiting to spawn truck again.")
-                end
-            else
-                warn("ProximityPrompt for spawning truck not found or invalid.")
-                return
-            end
-        
-            wait(1) -- Wait before checking again to prevent rapid looping
         end
 
         -- Drive Truck (Proximity Prompt)
@@ -202,7 +143,7 @@ local function StartAutoFarmTruck()
                 local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
                 if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
                     fireproximityprompt(getInPrompt)
-                    wait(10)
+                    wait(10) -- Wait for the player to get in the truck
                 else
                     warn("ProximityPrompt for driving truck not found or invalid.")
                     return
@@ -216,60 +157,18 @@ local function StartAutoFarmTruck()
             return
         end
 
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local player = game.Players.LocalPlayer
-        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar")
-        
-        -- Get the Job module
-        local jobModule = require(ReplicatedStorage.Modules.Job)
-        
-        -- Store the original SetDestination function (if needed later)
-        local originalSetDestination = jobModule.SetDestination
-        
-        -- Override the SetDestination function
-        function jobModule:SetDestination(destination)
-            -- Set the destination to the CFrame of the specified location
-            local customDestinationCFrame = workspace.Etc.Job.Truck.Destination["5"].CFrame
-            
-            -- Print to the console for debugging
-            print("Setting custom destination to:", customDestinationCFrame.Position)
-            
-            -- Move the vehicle to the custom destination
-            if vehicle then
-                local chassis = vehicle:FindFirstChild("A-Chassis Tune")
-                local vehicleSeat = vehicle:FindFirstChild("DriveSeat")
-        
-                if chassis and vehicleSeat then
-                    chassis:SetPrimaryPartCFrame(customDestinationCFrame) -- Move the chassis to the destination
-                    vehicleSeat.CFrame = customDestinationCFrame -- Ensure the seat is also updated
-                    print("Vehicle has been moved to the destination:", customDestinationCFrame.Position)
-                else
-                    warn("Chassis or VehicleSeat not found in the vehicle.")
-                end
-            else
-                warn("Vehicle not found.")
-            end
-        end
-        
-        -- Function to handle the GetInPrompt click
-        local function onGetInPromptClicked()
-            -- Call the overridden SetDestination function
-            jobModule:SetDestination() -- This will now use the custom logic
-        end
-        
-        -- Connect the GetInPrompt click to the function
+        -- Fly to custom job destination
         if vehicle then
-            local getInPrompt = vehicle:FindFirstChild("DriveSeat"):WaitForChild("PromptDriveSeat")
-            
-            if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
-                getInPrompt.Triggered:Connect(onGetInPromptClicked)
+            local chassis = vehicle:FindFirstChild("A-Chassis Tune")
+            if chassis then
+                chassis:SetPrimaryPartCFrame(destinationCFrame) -- Move the chassis to the custom destination
+                print("Vehicle has been moved to the custom job destination:", destinationCFrame.Position)
             else
-                warn("GetInPrompt not found or invalid.")
+                warn("Chassis not found in the vehicle.")
             end
         else
             warn("Vehicle not found.")
-        end        
-
+        end
     end)() -- Invoke the coroutine immediately
 end
 
@@ -308,7 +207,6 @@ local Toggle = AutofarmTab:CreateToggle({
         end
     end
 })
-
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
