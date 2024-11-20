@@ -1,0 +1,269 @@
+-- Anti-AFK
+local vu = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    vu:CaptureController()
+    vu:ClickButton2(Vector2.new())
+end)
+
+-- Rayfield Library
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- UI Setup
+local Window = Rayfield:CreateWindow({
+    Name = "KeziHub V1.0",
+    LoadingTitle = "Kezi Specialist HUB",
+    LoadingSubtitle = "by KezTeam",
+    Theme = "AmberGlow",
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = "KezHub",
+        FileName = "KeziHubSettings"
+    }
+})
+
+-- Tab for Minigames
+local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
+
+-- Information
+local Label = MinigamesTab:CreateLabel("Minigames Information")
+local Paragraph = Tab:CreateParagraph({Title = "Information", Content = "Required 6 Instance to use this feature. Make sure to use 1 Main Account and 5 Dummy Accounts"})
+
+-- Minigame Car
+local Label = MinigamesTab:CreateLabel("Buy Section")
+
+-- Button to Buy Hiace
+MinigamesTab:CreateButton({
+    Name = "Buy Hiace (ONLY FOR WIN ACCOUNT)",
+    Callback = function()
+        local args = {
+            [1] = "Buy",
+            [2] = "2020Hiace",
+            [3] = "White",
+            [4] = "Toyota"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteFunctions"):WaitForChild("Dealership"):InvokeServer(unpack(args))
+    end,
+})
+
+-- Configuration Information
+local Label = MinigamesTab:CreateLabel("Minigames Config")
+
+-- Pending Loop Time
+local Input = MinigamesTab:CreateInput({
+    Name = "Pending Loop Time",
+    CurrentValue = "1.5", -- Default value as string for easy conversion
+    PlaceholderText = "Input Placeholder",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Input1",
+    Callback = function(Text)
+        -- The callback function will update the global pending time variable when the user enters a new value
+        local pendingTime = tonumber(Text) -- Convert the input text to a number
+
+        -- If the value is valid, update the pending time, otherwise keep it at default (1.5)
+        if pendingTime then
+            pendingLoopTime = pendingTime
+        else
+            print("Invalid time input, using default 1.5 seconds")
+            pendingLoopTime = 1.5 -- Default to 1.5 if the input is invalid
+        end
+    end,
+})
+
+-- Adding Win Account Toggle
+local isMiniGameWinActive = false -- Flag to track if the mini-game win state is active
+
+MinigamesTab:CreateToggle({
+    Name = "Win Account",
+    CurrentValue = false,
+    Flag = "WinAccount", -- Unique identifier
+    Callback = function(Value)
+        local player = game.Players.LocalPlayer
+
+        -- Function to enter the minigame
+        local function enterMinigame()
+            local args = {
+                [1] = "Enter",
+                [2] = "2020Hiace" -- Replace with correct vehicle name for "Win Account"
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+        end
+
+        local function leaveMinigame()
+            local args = {
+                [1] = "Leave",
+                [2] = "2020Hiace"
+            }
+            
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+        end
+
+        if Value then
+            -- Global variable for the pending loop time
+            local pendingLoopTime = 1.5 -- Default value
+            
+            -- Set the mini-game win active flag to true
+            isMiniGameWinActive = true
+        
+            -- Enter Minigames when toggled on
+            enterMinigame()
+        
+            -- Detect when the character resets
+            player.CharacterAdded:Connect(function()
+                wait(pendingLoopTime) -- Wait for the time specified by the input value
+                if isMiniGameWinActive then -- Only call if mini-game win is still active
+                    enterMinigame() -- Re-run the minigame entry
+                end
+            end)
+        else
+            -- Reset Character
+            local player = game.Players.LocalPlayer
+
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Set health to 0 to reset the character
+            end
+            
+            -- Set the mini-game win active flag to false
+            isMiniGameWinActive = false
+
+            leaveMinigame()
+        end
+    end
+})
+ 
+-- Adding Lose Account Toggle
+local isMiniGameLoseActive = false -- Flag to track if the mini-game lose state is active
+
+local Toggle = MinigamesTab:CreateToggle({
+    Name = "Lose Account",
+    CurrentValue = false,
+    Flag = "LoseAccount",
+    Callback = function(Value)
+        local player = game.Players.LocalPlayer -- Get the local player
+    
+        -- Function to enter the minigame
+        local function enterMinigame()
+            local args = {
+                [1] = "Enter",
+                [2] = "2021Avanza15CVT" -- Replace with the correct vehicle name for "Win Account"
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+    
+            local humanoid = player.Character:WaitForChild("Humanoid")
+    
+            -- Start jumping coroutine
+            coroutine.wrap(function()
+                while isMiniGameLoseActive do -- Check if mini-game lose is still active
+                    humanoid.Jump = true
+                    wait(1) -- Adjust delay as needed
+                end
+            end)()
+        end
+
+        local function leaveMinigame()
+            local args = {
+                [1] = "Leave",
+                [2] = "2020Hiace"
+            }
+            
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+        end
+    
+        if Value then
+        -- Global variable for the pending loop time
+        local pendingLoopTime = 1.5 -- Default value
+
+        -- Your existing script with the character reset logic
+        if Value then
+            -- Set the mini-game win active flag to true
+            isMiniGameLoseActive = true
+
+            -- Enter Minigames when toggled on
+            enterMinigame()
+
+            -- Detect when the character resets
+            player.CharacterAdded:Connect(function()
+                wait(pendingLoopTime) -- Wait for the time specified by the input value
+                if isMiniGameLoseActive then -- Only call if mini-game win is still active
+                    enterMinigame() -- Re-run the minigame entry
+                end
+            end)
+        else
+            -- Reset Character
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Set health to 0 to reset the character
+            end
+    
+            -- Set the mini-game lose active flag to false
+            isMiniGameLoseActive = false
+
+            leaveMinigame()
+        end
+    end
+})
+
+-- Tab for Settings
+local SettingsTab = Window:CreateTab("Settings", 4483362458) -- Title, Image
+
+-- Dropdown for theme selection in SettingsTab
+local Dropdown = SettingsTab:CreateDropdown({
+    Name = "Theme Selector",
+    Options = {"Default", "AmberGlow", "Amethyst", "Bloom", "DarkBlue", "Green", "Light", "Ocean", "Serenity"},
+    CurrentOption = {"Default"},
+    MultipleOptions = false,
+    Flag = "Dropdown1", -- A flag is the identifier for the configuration file
+    Callback = function(Options)
+        -- Directly use the selected option to modify the theme
+        Window:ModifyTheme(Options[1]) -- Change the theme immediately based on the selected option
+    end,
+})
+
+-- Configuration saving logic specific to the SettingsTab
+local ConfigurationSaving = {
+    Enabled = true,
+    FolderName = "YourCustomFolderName", -- Custom folder for your game hub's settings
+    FileName = "BigHubSettings" -- Name of the settings file
+}
+
+-- Function to save settings when settings are modified
+local function saveSettings()
+    if ConfigurationSaving.Enabled then
+        local settings = {}
+
+        -- Collect settings from the SettingsTab using the flag (Dropdown selection)
+        settings["SelectedTheme"] = Dropdown.CurrentOption[1] -- Saving the selected theme
+
+        -- Assuming you have a method to save this config to a file or data store
+        -- For example, if you're using DataStoreService or another custom method to store the config
+        local saveService = game:GetService("DataStoreService"):GetDataStore("BigHubSettingsStore")
+
+        -- Saving to the data store
+        local success, errorMessage = pcall(function()
+            saveService:SetAsync(ConfigurationSaving.FileName, settings)
+        end)
+
+        if success then
+            print("Settings saved successfully.")
+        else
+            warn("Failed to save settings: " .. errorMessage)
+        end
+    else
+        print("Configuration saving is disabled.")
+    end
+end
+
+-- Automatically save the settings when the user closes the SettingsTab
+SettingsTab.OnTabClosed:Connect(function()
+    saveSettings() -- Save the settings when the tab is closed
+end)
+
+-- Optional: Add a button to manually save settings (if needed)
+local saveButton = SettingsTab:CreateButton({
+    Name = "Save Settings",
+    Callback = function()
+        saveSettings() -- Trigger saving the settings when the button is clicked
+    end,
+})
+
+-- Persisting UI on Character Reset
+local ScreenGui = Window:GetGui()
+ScreenGui.ResetOnSpawn = false
