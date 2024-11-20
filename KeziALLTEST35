@@ -1,0 +1,197 @@
+-- Anti-AFK Script
+local vu = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    vu:CaptureController()
+    vu:ClickButton2(Vector2.new())
+end)
+
+-- Rayfield Library Load
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- UI Setup
+local Window = Rayfield:CreateWindow({
+    Name = "KeziHub V1.0",
+    LoadingTitle = "Kezi Specialist HUB",
+    LoadingSubtitle = "by KezTeam",
+    Theme = "AmberGlow",
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = "KezHub",
+        FileName = "KeziHubSettings"
+    }
+})
+
+-- Tab for Minigames
+local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
+
+-- Information
+MinigamesTab:CreateLabel("Minigames Information")
+MinigamesTab:CreateParagraph({Title = "Information", Content = "Required 6 Instances to use this feature. Make sure to use 1 Main Account and 5 Dummy Accounts."})
+
+-- Minigame Car
+MinigamesTab:CreateLabel("Buy Section")
+
+-- Button to Buy Hiace
+MinigamesTab:CreateButton({
+    Name = "Buy Hiace (ONLY FOR WIN ACCOUNT)",
+    Callback = function()
+        local args = {
+            [1] = "Buy",
+            [2] = "2020Hiace",
+            [3] = "White",
+            [4] = "Toyota"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteFunctions"):WaitForChild("Dealership"):InvokeServer(unpack(args))
+    end,
+})
+
+-- Minigames Config Section
+MinigamesTab:CreateLabel("Minigames Config")
+
+-- Pending Loop Time
+local pendingLoopTime = 1.5 -- Default value
+local Input = MinigamesTab:CreateInput({
+    Name = "Pending Loop Time",
+    CurrentValue = tostring(pendingLoopTime), -- Default value as string for easy conversion
+    PlaceholderText = "Input Placeholder",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Input1",
+    Callback = function(Text)
+        local time = tonumber(Text) -- Convert the input text to a number
+        if time then
+            pendingLoopTime = time
+        else
+            print("Invalid input. Using default 1.5 seconds.")
+            pendingLoopTime = 1.5
+        end
+    end,
+})
+
+-- Global flags for minigame states
+local isMiniGameWinActive = false
+local isMiniGameLoseActive = false
+
+-- Win Account Toggle
+MinigamesTab:CreateToggle({
+    Name = "Win Account",
+    CurrentValue = false,
+    Flag = "WinAccount",
+    Callback = function(Value)
+        local player = game.Players.LocalPlayer
+
+        -- Function to enter the minigame
+        local function enterMinigame(vehicle)
+            local args = {
+                [1] = "Enter",
+                [2] = vehicle
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+        end
+
+        -- Function to leave the minigame
+        local function leaveMinigame(vehicle)
+            local args = {
+                [1] = "Leave",
+                [2] = vehicle
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+        end
+
+        if Value then
+            isMiniGameWinActive = true
+            enterMinigame("2020Hiace")
+
+            -- Detect when the character resets
+            player.CharacterAdded:Connect(function()
+                wait(pendingLoopTime)
+                if isMiniGameWinActive then
+                    enterMinigame("2020Hiace")
+                end
+            end)
+        else
+            -- Reset Character and leave the minigame
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Reset the character
+            end
+            isMiniGameWinActive = false
+            leaveMinigame("2020Hiace")
+        end
+    end
+})
+
+-- Lose Account Toggle
+MinigamesTab:CreateToggle({
+    Name = "Lose Account",
+    CurrentValue = false,
+    Flag = "LoseAccount",
+    Callback = function(Value)
+        local player = game.Players.LocalPlayer
+
+        -- Function to enter the minigame
+        local function enterMinigame(vehicle)
+            local args = {
+                [1] = "Enter",
+                [2] = vehicle
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+            local humanoid = player.Character:WaitForChild("Humanoid")
+
+            -- Start jumping coroutine
+            coroutine.wrap(function()
+                while isMiniGameLoseActive do
+                    humanoid.Jump = true
+                    wait(1)
+                end
+            end)()
+        end
+
+        -- Function to leave the minigame
+        local function leaveMinigame(vehicle)
+            local args = {
+                [1] = "Leave",
+                [2] = vehicle
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
+        end
+
+        if Value then
+            isMiniGameLoseActive = true
+            enterMinigame("2021Avanza15CVT")
+
+            -- Detect when the character resets
+            player.CharacterAdded:Connect(function()
+                wait(pendingLoopTime)
+                if isMiniGameLoseActive then
+                    enterMinigame("2021Avanza15CVT")
+                end
+            end)
+        else
+            -- Reset Character and leave the minigame
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Reset the character
+            end
+            isMiniGameLoseActive = false
+            leaveMinigame("2021Avanza15CVT")
+        end
+    end
+})
+
+-- Tab for Settings
+local SettingsTab = Window:CreateTab("Settings", 4483362458) -- Title, Image
+
+-- Dropdown for theme selection in SettingsTab
+local Dropdown = SettingsTab:CreateDropdown({
+    Name = "Theme Selector",
+    Options = {"Default", "AmberGlow", "Amethyst", "Bloom", "DarkBlue", "Green", "Light", "Ocean", "Serenity"},
+    CurrentOption = {"Default"},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(Options)
+        -- Change the theme based on selected option
+        Window:ModifyTheme(Options[1])
+    end,
+})
+
+-- Ensure UI persists on character reset
+local ScreenGui = Window:GetGui()
+ScreenGui.ResetOnSpawn = false
