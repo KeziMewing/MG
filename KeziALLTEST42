@@ -8,13 +8,23 @@ end)
 -- Rayfield Library Load
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-    Rayfield:Notify({
-        Title = "Is there any bugs?",
-        Content = "Consider report any bugs in KeziHub Discord Server",
-        Duration = 6.5,
-        Image = 4483362458,
-    })
-    wait(90)
+-- Function to show the notification every 90 seconds
+local function notifyLoop()
+    while true do
+        Rayfield:Notify({
+            Title = "Is there any bugs?",
+            Content = "Consider reporting any bugs in KeziHub Discord Server",
+            Duration = 6.5,  -- Duration of the notification
+            Image = 4483362458,  -- Icon ID for the notification
+        })
+        
+        wait(90)  -- Wait 90 seconds before showing the notification again
+    end
+end
+
+-- Run the notification loop asynchronously
+spawn(notifyLoop)
+
 
 -- UI Setup
 local Window = Rayfield:CreateWindow({
