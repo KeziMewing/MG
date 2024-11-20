@@ -8,6 +8,14 @@ end)
 -- Rayfield Library Load
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+    Rayfield:Notify({
+        Title = "Is there any bugs?",
+        Content = "Consider report any bugs in KeziHub Discord Server",
+        Duration = 6.5,
+        Image = 4483362458,
+    })
+    wait(90)
+
 -- UI Setup
 local Window = Rayfield:CreateWindow({
     Name = "KeziHub V1.0",
