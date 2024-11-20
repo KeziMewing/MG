@@ -26,7 +26,7 @@ local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
 
 -- Information
 local Label = MinigamesTab:CreateLabel("Minigames Information")
-local Paragraph = Tab:CreateParagraph({Title = "Information", Content = "Required 6 Instance to use this feature. Make sure to use 1 Main Account and 5 Dummy Accounts"})
+local Paragraph = MinigamesTab:CreateParagraph({Title = "Information", Content = "Required 6 Instance to use this feature. Make sure to use 1 Main Account and 5 Dummy Accounts"})
 
 -- Minigame Car
 local Label = MinigamesTab:CreateLabel("Buy Section")
@@ -214,6 +214,53 @@ local Dropdown = SettingsTab:CreateDropdown({
     Callback = function(Options)
         -- Directly use the selected option to modify the theme
         Window:ModifyTheme(Options[1]) -- Change the theme immediately based on the selected option
+    end,
+})
+
+-- Configuration saving logic specific to the SettingsTab
+local ConfigurationSaving = {
+    Enabled = true,
+    FolderName = "YourCustomFolderName", -- Custom folder for your game hub's settings
+    FileName = "BigHubSettings" -- Name of the settings file
+}
+
+-- Function to save settings when settings are modified
+local function saveSettings()
+    if ConfigurationSaving.Enabled then
+        local settings = {}
+
+        -- Collect settings from the SettingsTab using the flag (Dropdown selection)
+        settings["SelectedTheme"] = Dropdown.CurrentOption[1] -- Saving the selected theme
+
+        -- Assuming you have a method to save this config to a file or data store
+        -- For example, if you're using DataStoreService or another custom method to store the config
+        local saveService = game:GetService("DataStoreService"):GetDataStore("BigHubSettingsStore")
+
+        -- Saving to the data store
+        local success, errorMessage = pcall(function()
+            saveService:SetAsync(ConfigurationSaving.FileName, settings)
+        end)
+
+        if success then
+            print("Settings saved successfully.")
+        else
+            warn("Failed to save settings: " .. errorMessage)
+        end
+    else
+        print("Configuration saving is disabled.")
+    end
+end
+
+-- Automatically save the settings when the user closes the SettingsTab
+SettingsTab.OnTabClosed:Connect(function()
+    saveSettings() -- Save the settings when the tab is closed
+end)
+
+-- Optional: Add a button to manually save settings (if needed)
+local saveButton = SettingsTab:CreateButton({
+    Name = "Save Settings",
+    Callback = function()
+        saveSettings() -- Trigger saving the settings when the button is clicked
     end,
 })
 
