@@ -13,6 +13,7 @@ local Window = Rayfield:CreateWindow({
     Name = "KeziHub V1.0",
     LoadingTitle = "Kezi Specialist HUB",
     LoadingSubtitle = "by KezTeam",
+    Theme = 'Ocean'
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "KezHub",
@@ -24,8 +25,7 @@ local Window = Rayfield:CreateWindow({
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
 
 -- Information
-MinigamesTab:CreateSection("Information")
-MinigamesTab:CreateParagraph({Title = "", Content = "Required 6 Instances to use this feature. Make sure to use 1 Main Account and 5 Dummy Accounts."})
+MinigamesTab:CreateParagraph({Title = "Information", Content = "Required 6 Instances to use this feature. Make sure to use 1 Main Account and 5 Dummy Accounts."})
 
 -- Minigame Car
 MinigamesTab:CreateSection("Buy Car Section")
@@ -173,22 +173,6 @@ MinigamesTab:CreateToggle({
             leaveMinigame("2021Avanza15CVT")
         end
     end
-})
-
--- Tab for Settings
-local SettingsTab = Window:CreateTab("Settings", 4483362458) -- Title, Image
-
--- Dropdown for theme selection in SettingsTab
-local Dropdown = SettingsTab:CreateDropdown({
-    Name = "Theme Selector",
-    Options = {"Default", "AmberGlow", "Amethyst", "Bloom", "DarkBlue", "Green", "Light", "Ocean", "Serenity"},
-    CurrentOption = {"Default"},
-    MultipleOptions = false,
-    Flag = "Dropdown1",
-    Callback = function(Options)
-        -- Change the theme based on selected option
-        Window:ModifyTheme('Options[1]')
-    end,
 })
 
 -- Ensure UI persists on character reset
