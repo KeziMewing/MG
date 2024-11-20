@@ -1,6 +1,3 @@
-getgenv().performanceMode = true
-getgenv().autoExecWhenTeleport = true --# EXECUTOR WAJIB SUPPORT.
-
 -- Anti-AFK Script
 local vu = game:GetService("VirtualUser")
 game:GetService("Players").LocalPlayer.Idled:Connect(function()
@@ -27,7 +24,6 @@ end
 
 -- Run the notification loop asynchronously
 spawn(notifyLoop)
-
 
 -- UI Setup
 local Window = Rayfield:CreateWindow({
@@ -199,3 +195,20 @@ MinigamesTab:CreateToggle({
 -- Ensure UI persists on character reset
 local ScreenGui = Window:GetGui()
 ScreenGui.ResetOnSpawn = false
+
+-- Auto-execute the script when teleporting
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function()
+    -- Call the logic you want to run upon teleportation
+    Rayfield:CreateWindow({
+        Name = "KeziHub V1.0",
+        LoadingTitle = "Kezi Specialist HUB",
+        LoadingSubtitle = "by KezTeam",
+        Theme = 'Default',
+        ConfigurationSaving = {
+            Enabled = true,
+            FolderName = "KezHub",
+            FileName = "KeziHubSettings"
+        }
+    })
+    -- Add any other functions that need to run automatically when the player teleports or respawns.
+end)
