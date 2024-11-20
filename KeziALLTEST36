@@ -15,7 +15,7 @@ local Window = Rayfield:CreateWindow({
     LoadingSubtitle = "by KezTeam",
     Theme = "AmberGlow",
     ConfigurationSaving = {
-        Enabled = false,
+        Enabled = true,
         FolderName = "KezHub",
         FileName = "KeziHubSettings"
     }
@@ -25,11 +25,11 @@ local Window = Rayfield:CreateWindow({
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
 
 -- Information
-MinigamesTab:CreateLabel("Minigames Information")
-MinigamesTab:CreateParagraph({Title = "Information", Content = "Required 6 Instances to use this feature. Make sure to use 1 Main Account and 5 Dummy Accounts."})
+MinigamesTab:CreateSection("Information")
+MinigamesTab:CreateParagraph({Title = "", Content = "Required 6 Instances to use this feature. Make sure to use 1 Main Account and 5 Dummy Accounts."})
 
 -- Minigame Car
-MinigamesTab:CreateLabel("Buy Section")
+MinigamesTab:CreateSection("Buy Car Section")
 
 -- Button to Buy Hiace
 MinigamesTab:CreateButton({
@@ -46,7 +46,7 @@ MinigamesTab:CreateButton({
 })
 
 -- Minigames Config Section
-MinigamesTab:CreateLabel("Minigames Config")
+MinigamesTab:CreateSection("Minigames Config")
 
 -- Pending Loop Time
 local pendingLoopTime = 1.5 -- Default value
