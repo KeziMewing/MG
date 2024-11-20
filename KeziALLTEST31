@@ -119,6 +119,16 @@ local function StartAutoFarmTruck()
         -- Set the destination using the Job module
         jobModule:SetDestination(destinationCFrame)
 
+        -- Fire the prompt for starting the job
+        local startPrompt = workspace.Etc.Job.Truck.Starter.Prompt
+        if startPrompt and startPrompt:IsA("ProximityPrompt") then
+            fireproximityprompt(startPrompt) -- Fire the prompt to start the job
+            wait(2) -- Wait for the prompt to process
+        else
+            warn("Prompt for starting job not found or invalid.")
+            return
+        end
+
         -- Wait for a moment to ensure the job has been set
         wait(2)
 
@@ -207,8 +217,6 @@ local Toggle = AutofarmTab:CreateToggle({
         end
     end
 })
-
-
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
