@@ -33,7 +33,7 @@ local Window = Rayfield:CreateWindow({
     LoadingSubtitle = "by KezTeam",
     Theme = 'Default',
     ConfigurationSaving = {
-        Enabled = true,
+        Enabled = false,
         FolderName = "KezHub",
         FileName = "KeziHubSettings"
     }
