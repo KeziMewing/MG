@@ -206,6 +206,7 @@ local Toggle = AutofarmTab:CreateToggle({
             else
                 -- Inform the user about the invalid input
                 Toggle:SetValue(false) -- Turn off the toggle if the input is invalid
+                print("Invalid Teleport Time input. Please enter a valid number greater than 0.")
             end
         else
             -- Reset Character
@@ -217,6 +218,7 @@ local Toggle = AutofarmTab:CreateToggle({
         end
     end
 })
+
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
