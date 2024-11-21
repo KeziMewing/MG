@@ -51,42 +51,49 @@ local elapsedTimeLabel = MonitoringTab:CreateLabel("Elapsed Time: 00:00:00")
 local pointsCollectedLabel = MonitoringTab:CreateLabel("Points Collected: 0")
 
 -- Variables to track elapsed time and points collected
-local elapsedTime = 0
-local pointsCollected = 0
+local elapsedTime = 0 -- Total elapsed time in seconds
+local pointsCollected = 0 -- Total points collected
 
--- Update the elapsed time and points collected every second
+-- Update the elapsed time and points collected every frame
 game:GetService("RunService").Heartbeat:Connect(function()
     if isMiniGameWinActive or isMiniGameLoseActive then
-        elapsedTime = elapsedTime + game:GetService("RunService").Heartbeat:Wait() -- Increment elapsed time
-        
+        -- Increment elapsed time by the duration since the last frame
+        elapsedTime = elapsedTime + game:GetService("RunService").Heartbeat:Wait()
+
         -- Calculate elapsed time in hh:mm:ss format
         local hours = math.floor(elapsedTime / 3600)
         local minutes = math.floor((elapsedTime % 3600) / 60)
         local seconds = math.floor(elapsedTime % 60)
-        
+
         -- Format elapsed time
         local formattedTime = string.format("%02d:%02d:%02d", hours, minutes, seconds)
         elapsedTimeLabel.Text = "Elapsed Time: " .. formattedTime
 
-        -- Update points collected based on current active state
-        if isMiniGameWinActive then
-            pointsCollected = pointsCollected + (game.Players.LocalPlayer.Character and 10 or 0) -- Add 10 points for Win Account
-        elseif isMiniGameLoseActive then
-            pointsCollected = pointsCollected + (game.Players.LocalPlayer.Character and 5 or 0) -- Add 5 points for Lose Account
+        -- Check if the player's character exists and update points accordingly
+        if game.Players.LocalPlayer.Character then
+            if isMiniGameWinActive then
+                pointsCollected = pointsCollected + 10 -- Add 10 points for Win Account
+            elseif isMiniGameLoseActive then
+                pointsCollected = pointsCollected + 5 -- Add 5 points for Lose Account
+            end
         end
-        
+
+        -- Update the points collected label
         pointsCollectedLabel.Text = "Points Collected: " .. pointsCollected
     end
 end)
 
 -- Function to handle character reset and update points
 local function onCharacterReset()
+    -- Update points based on the current minigame state
     if isMiniGameWinActive then
         pointsCollected = pointsCollected + 10
     elseif isMiniGameLoseActive then
         pointsCollected = pointsCollected + 5
     end
-    pointsCollectedLabel.Text = "Points Collected: " .. pointsCollected -- Update points display
+
+    -- Update points display
+    pointsCollectedLabel.Text = "Points Collected: " .. pointsCollected
 end
 
 -- Connect character reset event to update points
