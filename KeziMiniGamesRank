@@ -1,5 +1,3 @@
-getgenv().performanceMode = true
-
 -- Anti-AFK Script
 local vu = game:GetService("VirtualUser")
 game:GetService("Players").LocalPlayer.Idled:Connect(function()
@@ -8,9 +6,7 @@ game:GetService("Players").LocalPlayer.Idled:Connect(function()
 end)
 
 -- Rayfield Library Load
-if getgenv().performanceMode == true then
-    local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-end
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Function to show the notification every 90 seconds
 local function notifyLoop()
