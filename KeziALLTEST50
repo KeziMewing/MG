@@ -40,71 +40,122 @@ local Window = Rayfield:CreateWindow({
 
 -- SCRIPTS HERE
 
--- Tab for Information
-local InfoTab = Window:CreateTab("Information", 4483362458) -- Title and icon
+-- Tab for Monitoring
+local MonitoringTab = Window:CreateTab("Monitoring", 4483362458) -- Title and icon
+
+-- Section for Monitoring Information
+MonitoringTab:CreateSection("Minigame Monitoring")
 
 -- Create Labels to show the stats in the UI
-local elapsedTimeLabel = InfoTab:CreateLabel("Elapsed Time: 0 seconds")
-local autoFarmTimeLabel = InfoTab:CreateLabel("AutoFarm Time: 0 seconds")
-local pointsLabel = InfoTab:CreateLabel("Points Collected: 0")
+local elapsedTimeLabel = MonitoringTab:CreateLabel("Elapsed Time: 00:00:00")
+local pointsCollectedLabel = MonitoringTab:CreateLabel("Points Collected: 0")
 
--- Function to update elapsed time
-local function getElapsedTime()
-    return math.floor(tick() - startTime) -- Time in seconds since script started
-end
+-- Variables to track elapsed time and points collected
+local elapsedTime = 0
+local pointsCollected = 0
 
--- Function to update auto-farm time
-local function getAutoFarmTime()
+-- Update the elapsed time every second
+game:GetService("RunService").Heartbeat:Connect(function()
     if isMiniGameWinActive or isMiniGameLoseActive then
-        return math.floor(tick() - autoFarmStartTime) -- Time in seconds while auto-farming
-    else
-        return 0 -- If neither account toggle is active
+        elapsedTime = elapsedTime + game:GetService("RunService").Heartbeat:Wait() -- Increment elapsed time
+    end
+
+    -- Calculate elapsed time in hh:mm:ss format
+    local hours = math.floor(elapsedTime / 3600)
+    local minutes = math.floor((elapsedTime % 3600) / 60)
+    local seconds = math.floor(elapsedTime % 60)
+    
+    -- Format elapsed time
+    local formattedTime = string.format("%02d:%02d:%02d", hours, minutes, seconds)
+    elapsedTimeLabel.Text = "Elapsed Time: " .. formattedTime
+
+    -- Update points collected based on character resets
+    if isMiniGameWinActive then
+        pointsCollected = pointsCollected + 10 -- Add 10 points for Win Account
+    elseif isMiniGameLoseActive then
+        pointsCollected = pointsCollected + 5 -- Add 5 points for Lose Account
+    end
+    
+    pointsCollectedLabel.Text = "Points Collected: " .. pointsCollected
+end)
+
+-- Function to reset points when toggles are turned off
+local function onCharacterReset()
+    if isMiniGameWinActive then
+        -- Logic for Win Account
+        pointsCollected = pointsCollected + 10
+    elseif isMiniGameLoseActive then
+        -- Logic for Lose Account
+        pointsCollected = pointsCollected + 5
     end
 end
 
--- Function to update points collected
-local function getPointsCollected()
-    return pointsCollected -- Return the total points collected so far
-end
-
--- Update the labels every frame
-game:GetService("RunService").Heartbeat:Connect(function()
-    elapsedTimeLabel.Text = "Elapsed Time: " .. getElapsedTime() .. " seconds"
-    autoFarmTimeLabel.Text = "AutoFarm Time: " .. getAutoFarmTime() .. " seconds"
-    pointsLabel.Text = "Points Collected: " .. getPointsCollected()
-end)
+-- Connect character reset event to update points
+game.Players.LocalPlayer.CharacterAdded:Connect(onCharacterReset)
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
 
+-- Information
+MinigamesTab:CreateSection("Minigames Information")
+MinigamesTab:CreateParagraph({Title = "Information", Content = "Required 6 Instances to use this feature. Make sure to use 1 Main Account and 5 Dummy Accounts."})
+
+-- Minigame Car
+MinigamesTab:CreateSection("Buy Car Section")
+
+-- Button to Buy Avanza 1.5G
+MinigamesTab:CreateButton({
+    Name = "Buy Avanza (ONLY FOR LOSE ACCOUNT)",
+    Callback = function()
+        local args = {
+            [1] = "Buy",
+            [2] = "2021Avanza15CVT",
+            [3] = "White",
+            [4] = "Toyota"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteFunctions"):WaitForChild("Dealership"):InvokeServer(unpack(args))
+    end,
+})
+
+-- Button to Buy Hiace
+MinigamesTab:CreateButton({
+    Name = "Buy Hiace (ONLY FOR WIN ACCOUNT)",
+    Callback = function()
+        local args = {
+            [1] = "Buy",
+            [2] = "2020Hiace",
+            [3] = "White",
+            [4] = "Toyota"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteFunctions"):WaitForChild("Dealership"):InvokeServer(unpack(args))
+    end,
+})
+
+-- Minigames Config Section
+MinigamesTab:CreateSection("Minigames Config")
+
+-- Pending Loop Time
+local pendingLoopTime = 1.5 -- Default value
+local Input = MinigamesTab:CreateInput({
+    Name = "Pending Loop Time",
+    CurrentValue = tostring(pendingLoopTime), -- Default value as string for easy conversion
+    PlaceholderText = "Input Placeholder",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Input1",
+    Callback = function(Text)
+        local time = tonumber(Text) -- Convert the input text to a number
+        if time then
+            pendingLoopTime = time
+        else
+            print("Invalid input. Using default 1.5 seconds.")
+            pendingLoopTime = 1.5
+        end
+    end,
+})
+
 -- Global flags for minigame states
 local isMiniGameWinActive = false
 local isMiniGameLoseActive = false
-local pointsCollected = 0
-local winAccountLoops = 0
-local loseAccountLoops = 0
-local autoFarmStartTime = 0 -- Time when the auto-farm starts
-local pendingLoopTime = 1.5 -- Default value for pending loop time
-
--- Function to update elapsed time
-local function getAutoFarmTime()
-    if isMiniGameWinActive or isMiniGameLoseActive then
-        return math.floor(tick() - autoFarmStartTime) -- Time in seconds while auto-farming
-    else
-        return 0 -- If neither account toggle is active
-    end
-end
-
--- Function to increment points collected
-local function incrementPoints(accountType)
-    if accountType == "win" then
-        winAccountLoops = winAccountLoops + 1
-        pointsCollected = pointsCollected + 10  -- Example: Each loop adds 10 points
-    elseif accountType == "lose" then
-        loseAccountLoops = loseAccountLoops + 1
-        pointsCollected = pointsCollected + 5  -- Example: Each loop adds 5 points
-    end
-end
 
 -- Win Account Toggle
 MinigamesTab:CreateToggle({
@@ -134,7 +185,6 @@ MinigamesTab:CreateToggle({
 
         if Value then
             isMiniGameWinActive = true
-            autoFarmStartTime = tick() -- Start the auto-farm time when the toggle is activated
             enterMinigame("2020Hiace")
 
             -- Detect when the character resets
@@ -142,7 +192,6 @@ MinigamesTab:CreateToggle({
                 wait(pendingLoopTime)
                 if isMiniGameWinActive then
                     enterMinigame("2020Hiace")
-                    incrementPoints("win") -- Increment points on each loop
                 end
             end)
         else
@@ -193,7 +242,6 @@ MinigamesTab:CreateToggle({
 
         if Value then
             isMiniGameLoseActive = true
-            autoFarmStartTime = tick() -- Start the auto-farm time when the toggle is activated
             enterMinigame("2021Avanza15CVT")
 
             -- Detect when the character resets
@@ -201,7 +249,6 @@ MinigamesTab:CreateToggle({
                 wait(pendingLoopTime)
                 if isMiniGameLoseActive then
                     enterMinigame("2021Avanza15CVT")
-                    incrementPoints("lose") -- Increment points on each loop
                 end
             end)
         else
