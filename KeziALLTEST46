@@ -44,6 +44,7 @@ local AutofarmTab = Window:CreateTab("Auto Farm", 4483362458) -- Title and icon
 
 local selectedJob = "Truck" -- Default selected job
 local teleportTime = "" -- Initialize teleport time variable
+local teleportptshadTime = "" -- Initialize Teleport PT SHAD Time variable
 
 -- Dropdown for job selection
 local Dropdown = AutofarmTab:CreateDropdown({
@@ -66,6 +67,18 @@ local Input = AutofarmTab:CreateInput({
     Flag = "Input1",
     Callback = function(Text)
         teleportTime = Text -- Update teleport time based on input
+    end,
+})
+
+-- Input for teleport to pt shad time
+local Input2 = AutofarmTab:CreateInput({
+    Name = "Teleport To PT SHAD Time",
+    CurrentValue = teleportptshadTime,
+    PlaceholderText = "Teleport To PT SHAD Time (in seconds)",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Input2",
+    Callback = function(Text)
+        teleportptshadTime = Text -- Update teleport pt shad time based on input
     end,
 })
 
@@ -123,32 +136,16 @@ local function StartAutoFarmTruck()
 
         -- Example function call to fly to the waypoint
         local function startFlyingToWaypoint()
-            local flyDuration = 15 -- Duration in seconds (you can adjust this)
-            flyToWaypoint(flyDuration) -- Call the flyToWaypoint function with the duration
+            local flyDuration = tonumber(teleportptshadTime) -- Duration in seconds (you can adjust this)
+            if flyDuration and flyDuration > 0 then
+                flyToWaypoint(flyDuration) -- Call the flyToWaypoint function with the duration
+            else
+                print("Invalid PT SHAD Time input.")
+            end
         end
 
         -- Call the function to start flying to the waypoint
         startFlyingToWaypoint()
-
-        -- Get the Job module
-        local jobModule = require(game:GetService("ReplicatedStorage").Modules.Job) -- Get the Job module
-        local destinationCFrame = workspace.Etc.Job.Truck.Destination["5"].CFrame -- Custom destination CFrame
-
-        -- Set the destination using the Job module
-        jobModule:SetDestination(destinationCFrame)
-
-        -- Fire the prompt for starting the job
-        local startPrompt = workspace.Etc.Job.Truck.Starter.Prompt
-        if startPrompt and startPrompt:IsA("ProximityPrompt") then
-            fireproximityprompt(startPrompt) -- Fire the prompt to start the job
-            wait(2) -- Wait for the prompt to process
-        else
-            warn("Prompt for starting job not found or invalid.")
-            return
-        end
-
-        -- Wait for a moment to ensure the job has been set
-        wait(2)
 
         -- Spawn Truck (Proximity Prompt)
         local truckJobPath = workspace.Etc.Job.Truck
@@ -184,19 +181,6 @@ local function StartAutoFarmTruck()
             warn("Vehicle not found.")
             return
         end
-
-        -- Fly to custom job destination
-        if vehicle then
-            local chassis = vehicle:FindFirstChild("A-Chassis Tune")
-            if chassis then
-                chassis:SetPrimaryPartCFrame(destinationCFrame) -- Move the chassis to the custom destination
-                print("Vehicle has been moved to the custom job destination:", destinationCFrame.Position)
-            else
-                warn("Chassis not found in the vehicle.")
-            end
-        else
-            warn("Vehicle not found.")
-        end
     end)() -- Invoke the coroutine immediately
 end
 
@@ -217,15 +201,13 @@ local Toggle = AutofarmTab:CreateToggle({
                 if selectedJob == "Truck" then
                     StartAutoFarmTruck() -- Call the AutoFarm function for the Truck job
                 else
-                    print("No valid job selected.")
+                    return
                 end
             else
                 -- Inform the user about the invalid input
-                print("Please enter a valid teleport time greater than 0.")
                 Toggle:SetValue(false) -- Turn off the toggle if the input is invalid
             end
         else
-            print("AutoFarm stopped.")
             -- Reset Character
             local player = game.Players.LocalPlayer
             
