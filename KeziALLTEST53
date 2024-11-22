@@ -32,7 +32,7 @@ local Window = Rayfield:CreateWindow({
     LoadingSubtitle = "by KezTeam",
     Theme = 'Default',
     ConfigurationSaving = {
-        Enabled = true,
+        Enabled = false,
         FolderName = "KezHub",
         FileName = "KeziHubSettings"
     }
@@ -51,53 +51,227 @@ local elapsedTimeLabel = MonitoringTab:CreateLabel("Elapsed Time: 00:00:00")
 local pointsCollectedLabel = MonitoringTab:CreateLabel("Points Collected: 0")
 
 -- Variables to track elapsed time and points collected
-local elapsedTime = 0 -- Total elapsed time in seconds
-local pointsCollected = 0 -- Total points collected
+local elapsedTime = 0
+local pointsCollected = 0
 
--- Update the elapsed time and points collected every frame
+-- Update the elapsed time and points collected every second
 game:GetService("RunService").Heartbeat:Connect(function()
     if isMiniGameWinActive or isMiniGameLoseActive then
-        -- Increment elapsed time by the duration since the last frame
-        elapsedTime = elapsedTime + game:GetService("RunService").Heartbeat:Wait()
-
+        elapsedTime = elapsedTime + game:GetService("RunService").Heartbeat:Wait() -- Increment elapsed time
+        
         -- Calculate elapsed time in hh:mm:ss format
         local hours = math.floor(elapsedTime / 3600)
         local minutes = math.floor((elapsedTime % 3600) / 60)
         local seconds = math.floor(elapsedTime % 60)
-
+        
         -- Format elapsed time
         local formattedTime = string.format("%02d:%02d:%02d", hours, minutes, seconds)
         elapsedTimeLabel.Text = "Elapsed Time: " .. formattedTime
 
-        -- Check if the player's character exists and update points accordingly
-        if game.Players.LocalPlayer.Character then
-            if isMiniGameWinActive then
-                pointsCollected = pointsCollected + 10 -- Add 10 points for Win Account
-            elseif isMiniGameLoseActive then
-                pointsCollected = pointsCollected + 5 -- Add 5 points for Lose Account
-            end
+        -- Update points collected based on current active state
+        if isMiniGameWinActive then
+            pointsCollected = pointsCollected + (game.Players.LocalPlayer.Character and 10 or 0) -- Add 10 points for Win Account
+        elseif isMiniGameLoseActive then
+            pointsCollected = pointsCollected + (game.Players.LocalPlayer.Character and 5 or 0) -- Add 5 points for Lose Account
         end
-
-        -- Update the points collected label
+        
         pointsCollectedLabel.Text = "Points Collected: " .. pointsCollected
     end
 end)
 
 -- Function to handle character reset and update points
 local function onCharacterReset()
-    -- Update points based on the current minigame state
     if isMiniGameWinActive then
         pointsCollected = pointsCollected + 10
     elseif isMiniGameLoseActive then
         pointsCollected = pointsCollected + 5
     end
-
-    -- Update points display
-    pointsCollectedLabel.Text = "Points Collected: " .. pointsCollected
+    pointsCollectedLabel.Text = "Points Collected: " .. pointsCollected -- Update points display
 end
 
 -- Connect character reset event to update points
 game.Players.LocalPlayer.CharacterAdded:Connect(onCharacterReset)
+
+-- Tab for Auto Farm
+local AutofarmTab = Window:CreateTab("Auto Farm", 4483362458) -- Title and icon
+
+local selectedJob = "Truck" -- Default selected job
+local teleportTime = "" -- Initialize teleport time variable
+local teleportptshadTime = "" -- Initialize Teleport PT SHAD Time variable
+
+-- Dropdown for job selection
+local Dropdown = AutofarmTab:CreateDropdown({
+    Name = "Select Job",
+    Options = {"Truck"}, -- Add more options if needed
+    CurrentOption = {"Truck"},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(Options)
+        selectedJob = Options[1] -- Update selected job based on dropdown selection
+    end,
+})
+
+-- Input for teleport time
+local Input = AutofarmTab:CreateInput({
+    Name = "Teleport Time",
+    CurrentValue = teleportTime,
+    PlaceholderText = "Teleport Time (in seconds)",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Input1",
+    Callback = function(Text)
+        teleportTime = Text -- Update teleport time based on input
+    end,
+})
+
+-- Input for teleport to pt shad time
+local Input2 = AutofarmTab:CreateInput({
+    Name = "Teleport To PT SHAD Time",
+    CurrentValue = teleportptshadTime,
+    PlaceholderText = "Teleport To PT SHAD Time (in seconds)",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Input2",
+    Callback = function(Text)
+        teleportptshadTime = Text -- Update teleport pt shad time based on input
+    end,
+})
+
+-- Create Truck AutoFarm Function
+local function StartAutoFarmTruck()
+    coroutine.wrap(function()
+        local player = game.Players.LocalPlayer
+        
+        -- Fire server event to start the job
+        local args = { [1] = "Truck" }
+        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))
+
+        -- Function to fly the player to the specified waypoint
+        local function flyToWaypoint(duration)
+            local character = player.Character or player.CharacterAdded:Wait() -- Wait for the player's character to be available
+
+            if character then
+                local humanoidRootPart = character:FindFirstChild("HumanoidRootPart") -- Find the HumanoidRootPart
+
+                if humanoidRootPart then
+                    -- Wait for the Waypoint in the workspace
+                    local waypointfolder = workspace:WaitForChild("Etc"):WaitForChild("Waypoint")
+                    local waypoint = waypointfolder:WaitForChild("Waypoint")
+
+                    -- Ensure the waypoint exists
+                    if waypoint then
+                        local startCFrame = humanoidRootPart.CFrame -- Get the starting CFrame
+                        local endCFrame = waypoint.CFrame -- Get the CFrame of the waypoint
+                        local startTime = tick() -- Record the starting time
+
+                        -- Loop until the duration has passed
+                        while tick() - startTime < duration do
+                            local elapsedTime = tick() - startTime
+                            local alpha = elapsedTime / duration -- Calculate the proportion of time passed
+
+                            -- Interpolate the CFrame smoothly
+                            humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, alpha)
+
+                            wait(0.03) -- Wait for a short time to create a smooth movement
+                        end
+
+                        -- Ensure the HumanoidRootPart ends exactly at the target CFrame
+                        humanoidRootPart.CFrame = endCFrame
+                        print("Arrived at waypoint:", waypoint.Position) -- Log the arrival
+                    else
+                        warn("Waypoint not found in workspace.")
+                    end
+                else
+                    warn("HumanoidRootPart not found for player.")
+                end
+            else
+                warn("Character not found.")
+            end
+        end
+
+        -- Example function call to fly to the waypoint
+        local function startFlyingToWaypoint()
+            local flyDuration = tonumber(teleportptshadTime) -- Duration in seconds (you can adjust this)
+            if flyDuration and flyDuration > 0 then
+                flyToWaypoint(flyDuration) -- Call the flyToWaypoint function with the duration
+            else
+                print("Invalid PT SHAD Time input.")
+            end
+        end
+
+        -- Call the function to start flying to the waypoint
+        startFlyingToWaypoint()
+
+        -- Spawn Truck (Proximity Prompt)
+        local truckJobPath = workspace.Etc.Job.Truck
+        local part = truckJobPath:GetChildren()[5]
+        local spawnPrompt = part:WaitForChild("Part"):WaitForChild("Prompt")
+
+        if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
+            fireproximityprompt(spawnPrompt)
+            wait(10) -- Wait for the truck to spawn
+        else
+            warn("ProximityPrompt for spawning truck not found or invalid.")
+            return
+        end
+
+        -- Drive Truck (Proximity Prompt)
+        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar")
+        if vehicle then
+            local driveSeat = vehicle:FindFirstChild("DriveSeat")
+            if driveSeat then
+                local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
+                if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
+                    fireproximityprompt(getInPrompt)
+                    wait(10) -- Wait for the player to get in the truck
+                else
+                    warn("ProximityPrompt for driving truck not found or invalid.")
+                    return
+                end
+            else
+                warn("DriveSeat not found in vehicle.")
+                return
+            end
+        else
+            warn("Vehicle not found.")
+            return
+        end
+    end)() -- Invoke the coroutine immediately
+end
+
+-- Toggle for starting auto farm
+local Toggle = AutofarmTab:CreateToggle({
+    Name = "Start AutoFarm",
+    CurrentValue = false,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        if Value then
+            -- Validate teleport time input
+            local teleportTimeValue = tonumber(teleportTime)
+            if teleportTimeValue and teleportTimeValue > 0 then
+                -- Proceed with starting the AutoFarm
+                print("Starting AutoFarm for job: " .. selectedJob .. " with teleport time: " .. teleportTimeValue .. " seconds.")
+
+                -- Start the AutoFarm for the selected job
+                if selectedJob == "Truck" then
+                    StartAutoFarmTruck() -- Call the AutoFarm function for the Truck job
+                else
+                    return
+                end
+            else
+                -- Inform the user about the invalid input
+                Toggle:SetValue(false) -- Turn off the toggle if the input is invalid
+                print("Invalid Teleport Time input. Please enter a valid number greater than 0.")
+            end
+        else
+            -- Reset Character
+            local player = game.Players.LocalPlayer
+            
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Set health to 0 to reset the character
+            end
+        end
+    end
+})
+
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
