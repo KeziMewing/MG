@@ -144,73 +144,75 @@ local function StartAutoFarmTruck()
         local args = { [1] = "Truck" }
         game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))
 
-        -- Function to fly the player to the specified waypoint
-        local function flyToWaypoint(duration)
-            local character = player.Character or player.CharacterAdded:Wait() -- Wait for the player's character to be available
+        -- Function to fly the player to the specified waypoint and hold for a duration
+        local function flyToWaypoint(flyDuration, holdDuration)
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            local waypoint = workspace:WaitForChild("Etc"):WaitForChild("Waypoint"):WaitForChild("Waypoint")
 
-            if character then
-                local humanoidRootPart = character:FindFirstChild("HumanoidRootPart") -- Find the HumanoidRootPart
+            if humanoidRootPart and waypoint then
+                local startCFrame, endCFrame = humanoidRootPart.CFrame, waypoint.CFrame
+                local startTime = tick()
 
-                if humanoidRootPart then
-                    -- Wait for the Waypoint in the workspace
-                    local waypointfolder = workspace:WaitForChild("Etc"):WaitForChild("Waypoint")
-                    local waypoint = waypointfolder:WaitForChild("Waypoint")
-
-                    -- Ensure the waypoint exists
-                    if waypoint then
-                        local startCFrame = humanoidRootPart.CFrame -- Get the starting CFrame
-                        local endCFrame = waypoint.CFrame -- Get the CFrame of the waypoint
-                        local startTime = tick() -- Record the starting time
-
-                        -- Loop until the duration has passed
-                        while tick() - startTime < duration do
-                            local elapsedTime = tick() - startTime
-                            local alpha = elapsedTime / duration -- Calculate the proportion of time passed
-
-                            -- Interpolate the CFrame smoothly
-                            humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, alpha)
-
-                            wait(0.03) -- Wait for a short time to create a smooth movement
-                        end
-
-                        -- Ensure the HumanoidRootPart ends exactly at the target CFrame
-                        humanoidRootPart.CFrame = endCFrame
-                        print("Arrived at waypoint:", waypoint.Position) -- Log the arrival
-                    else
-                        warn("Waypoint not found in workspace.")
-                    end
-                else
-                    warn("HumanoidRootPart not found for player.")
+                -- Fly to the waypoint
+                while tick() - startTime < flyDuration do
+                    humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, (tick() - startTime) / flyDuration)
+                    wait(0.03)
                 end
+                
+                humanoidRootPart.CFrame = endCFrame -- Ensure exact arrival
+                wait(holdDuration) -- Hold at waypoint
             else
-                warn("Character not found.")
+                warn("Character or waypoint not found.")
             end
         end
 
-        -- Example function call to fly to the waypoint
+        -- Start flying to the waypoint
         local function startFlyingToWaypoint()
-            local flyDuration = tonumber(teleportptshadTime) -- Duration in seconds (you can adjust this)
-            if flyDuration and flyDuration > 0 then
-                flyToWaypoint(flyDuration) -- Call the flyToWaypoint function with the duration
-            else
-                print("Invalid PT SHAD Time input.")
-            end
+            local flyDuration = tonumber(teleportptshadTime) or 0 -- Duration in seconds
+            if flyDuration > 0 then flyToWaypoint(flyDuration, 5) end -- Default hold duration is 5 seconds
         end
 
-        -- Call the function to start flying to the waypoint
         startFlyingToWaypoint()
 
+        -- Start Job
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local promptPart = workspace.Etc.Job.Truck.Starter -- Path to the part with the Proximity Prompt
+        local prompt = promptPart:WaitForChild("Prompt") -- Get the Proximity Prompt
+
+        -- Function to trigger the Proximity Prompt
+        local function triggerPrompt()
+            prompt:Trigger() -- Simulate triggering the prompt
+        end
+
+        -- Delay before triggering the prompt
+        wait(2) -- Wait 2 seconds
+        triggerPrompt() -- Call the function to trigger the prompt
+
         -- Spawn Truck (Proximity Prompt)
-        local truckJobPath = workspace.Etc.Job.Truck
-        local part = truckJobPath:GetChildren()[5]
-        local spawnPrompt = part:WaitForChild("Part"):WaitForChild("Prompt")
+        local player = game.Players.LocalPlayer
+        local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part.Prompt
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
-            fireproximityprompt(spawnPrompt)
-            wait(10) -- Wait for the truck to spawn
+            while true do
+                fireproximityprompt(spawnPrompt) -- Trigger the Proximity Prompt
+                
+                -- Wait a bit before triggering again to avoid spam
+                wait(2) 
+                
+                -- Check the player's truck's horsepower
+                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar") -- Assuming the naming convention is "{PlayerName}'sCar"
+                if vehicle and vehicle.Customizeable and vehicle.Customizeable.Horsepower then
+                    local horsepower = vehicle.Customizeable.Horsepower.Value -- Access the horsepower value
+                    if horsepower >= 114 and horsepower <= 134 then
+                        print("Desired horsepower reached:", horsepower)
+                        break -- Exit the loop if the condition is met
+                    end
+                end
+            end
         else
             warn("ProximityPrompt for spawning truck not found or invalid.")
-            return
         end
 
         -- Drive Truck (Proximity Prompt)
@@ -219,20 +221,20 @@ local function StartAutoFarmTruck()
             local driveSeat = vehicle:FindFirstChild("DriveSeat")
             if driveSeat then
                 local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
-                if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
-                    fireproximityprompt(getInPrompt)
-                    wait(10) -- Wait for the player to get in the truck
-                else
-                    warn("ProximityPrompt for driving truck not found or invalid.")
-                    return
-                end
+                    if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
+                        fireproximityprompt(getInPrompt)
+                            wait(10) -- Wait for the player to get in the truck
+                    else
+                            warn("ProximityPrompt for driving truck not found or invalid.")
+                            return
+                    end
             else
-                warn("DriveSeat not found in vehicle.")
-                return
+                    warn("DriveSeat not found in vehicle.")
+                    return
             end
         else
-            warn("Vehicle not found.")
-            return
+                warn("Vehicle not found.")
+                return
         end
     end)() -- Invoke the coroutine immediately
 end
@@ -271,7 +273,6 @@ local Toggle = AutofarmTab:CreateToggle({
         end
     end
 })
-
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
