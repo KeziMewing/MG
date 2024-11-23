@@ -327,8 +327,6 @@ local function StartAutoFarmTruck()
     end)() -- Invoke the coroutine immediately
 end
 
-local isAutoFarmActive = false
-
 -- Toggle for starting auto farm
 local Toggle = AutofarmTab:CreateToggle({
     Name = "Start AutoFarm",
@@ -339,9 +337,6 @@ local Toggle = AutofarmTab:CreateToggle({
             -- Validate teleport time input
             local teleportTimeValue = tonumber(teleportTime)
             if teleportTimeValue and teleportTimeValue > 0 then
-                -- Proceed with starting the AutoFarm
-                isAutoFarmActive = true
-
                 -- Start the AutoFarm for the selected job
                 if selectedJob == "Truck" then
                     StartAutoFarmTruck() -- Call the AutoFarm function for the Truck job
@@ -354,8 +349,6 @@ local Toggle = AutofarmTab:CreateToggle({
                 print("Invalid Teleport Time input. Please enter a valid number greater than 0.")
             end
         else
-            isAutoFarmActive = false
-
             -- Reset Character
             local player = game.Players.LocalPlayer
             
