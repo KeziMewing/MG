@@ -107,7 +107,9 @@ local Dropdown = AutofarmTab:CreateDropdown({
     MultipleOptions = false,
     Flag = "Dropdown1",
     Callback = function(Options)
-        selectedJob = Options[1] -- Update selected job based on dropdown selection
+        if #Options > 0 then
+            selectedJob = Options[1] -- Update selected job based on dropdown selection
+        end
     end,
 })
 
@@ -236,9 +238,7 @@ local function StartAutoFarmTruck()
             while true do
                 -- Fire the Proximity Prompt
                 fireproximityprompt(spawnPrompt) -- Trigger the Proximity Prompt
-                
-                -- Wait for a short duration to allow for the truck to spawn
-                wait(5) -- Adjust the wait time as needed for your game mechanics
+                wait(5) -- Wait for a short duration to allow for the truck to spawn
 
                 -- Check the player's truck's horsepower
                 local vehicleName = player.Name .. "'sCar" -- Get the vehicle name
@@ -330,6 +330,7 @@ local Toggle = AutofarmTab:CreateToggle({
                 print("Invalid Teleport Time input. Please enter a valid number greater than 0.")
             end
         else
+            -- Stop AutoFarm
             StartAutoFarmTruck = false
 
             -- Reset Character
