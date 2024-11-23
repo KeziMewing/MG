@@ -146,6 +146,7 @@ local function StartAutoFarmTruck()
         local args = { [1] = selectedJob } -- Use selectedJob directly
         game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))
 
+        local isteleporttoptshad = false
         -- Function to fly the player to the specified waypoint and hold for a duration
         local function flyToWaypoint(flyDuration, holdDuration)
             local character = player.Character or player.CharacterAdded:Wait()
@@ -169,16 +170,29 @@ local function StartAutoFarmTruck()
             end
         end
 
-        -- Start flying to the waypoint
-        local function startFlyingToWaypoint()
-            local flyDuration = tonumber(teleportptshadTime) or 0 -- Duration in seconds
-            if flyDuration > 0 then 
-                flyToWaypoint(flyDuration, 5) -- Default hold duration is 5 seconds 
+        -- Script to fire the Proximity Prompt in Roblox
+        local prompt = workspace.Etc.Job.Truck.Starter:WaitForChild("Prompt") -- Get the ProximityPrompt
+
+        -- Function to fire the Proximity Prompt
+        local function fireProximityPrompt(prompt)
+            if prompt and prompt:IsA("ProximityPrompt") then
+                if isteleporttoptshad == true then
+                    -- Fire the Proximity Prompt
+                    fireproximityprompt(prompt) -- This function simulates the user interaction
+                    print("Proximity prompt fired for: " .. prompt.Name)
+                end
+            else
+                warn("Provided object is not a valid ProximityPrompt.")
             end
         end
 
-        startFlyingToWaypoint() -- Trigger fly to waypoint
-        
+        -- Call the function to fire the Proximity Prompt
+        fireProximityPrompt(prompt)
+
+
+        -- Simulate firing the Proximity Prompt
+        simulateProximityPromptFire(prompt)
+
         -- Spawn Truck
         local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part.Prompt
         local targetHorsepower = {114, 134} -- List of target horsepower values
