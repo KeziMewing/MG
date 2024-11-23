@@ -194,10 +194,42 @@ local function StartAutoFarmTruck()
         triggerPrompt() -- Call the function to trigger the prompt
 
         -- Wait for a moment after triggering the prompt to ensure it processes
-        wait(2) 
+        wait(2)
+
+        -- Fly Near Spawn Truck
+        local function flyToCoordinates(targetPosition, duration)
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        
+            if humanoidRootPart then
+                local startCFrame = humanoidRootPart.CFrame -- Get the current position and orientation
+                local endCFrame = CFrame.new(targetPosition) -- Create CFrame with the target position
+        
+                local startTime = tick() -- Record the start time
+        
+                -- Move to the target position over the specified duration
+                while tick() - startTime < duration do
+                    local alpha = (tick() - startTime) / duration -- Calculate the interpolation factor
+                    humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, alpha) -- Lerp to the new position
+                    wait(0.03) -- Short wait for smooth movement
+                end
+        
+                humanoidRootPart.CFrame = endCFrame -- Ensure final position is set
+            else
+                warn("HumanoidRootPart not found.")
+            end
+        end
+        
+        -- Usage
+        local targetPosition = Vector3.new(-21776.6973, 1042.03174, -26780.584) -- Target coordinates
+        local duration = 1 -- Duration in seconds
+        
+        flyToCoordinates(targetPosition, duration) -- Call the function        
 
         -- Spawn Truck (Proximity Prompt)
         local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part.Prompt
+        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
             while true do
@@ -205,9 +237,8 @@ local function StartAutoFarmTruck()
                 wait(2) -- Wait a bit before triggering again to avoid spam
                 
                 -- Check the player's truck's horsepower
-                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar") -- Assuming the naming convention is "{PlayerName}'sCar"
                 if vehicle and vehicle.Customizeable and vehicle.Customizeable.Horsepower then
-                    local horsepower = vehicle.Customizeable.Horsepower.Value -- Access the horsepower value
+                    local horsepower = vehicle.Customizeable.Horsepower.Value
                     if horsepower >= 114 and horsepower <= 134 then
                         print("Desired horsepower reached:", horsepower)
                         break -- Exit the loop if the condition is met
