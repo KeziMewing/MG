@@ -192,13 +192,13 @@ local function StartAutoFarmTruck()
         -- Call the function to fire the Proximity Prompt
         fireProximityPrompt()
 
-        -- Fly to Trucks function
+        -- Fly to designated truck coordinates
         local function flyToCoordinates(targetPosition, duration)
             local character = player.Character or player.CharacterAdded:Wait()
             local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
         
             if humanoidRootPart then
-                if startJob then -- Fixed conditional to use '==' for comparison
+                if startJob then -- Ensure the job has started before flying
                     local startCFrame = humanoidRootPart.CFrame -- Get the current position and orientation
                     local endCFrame = CFrame.new(targetPosition) -- Create CFrame with the target position
             
@@ -207,14 +207,16 @@ local function StartAutoFarmTruck()
                     -- Move to the target position over the specified duration
                     while tick() - startTime < duration do
                         local alpha = (tick() - startTime) / duration -- Calculate the interpolation factor
-                        humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, alpha) -- Lerp to the new position
-                        wait(0.03) -- Short wait for smooth movement
+                        humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, alpha) -- Interpolate between the start and end CFrames
+                        wait(0.03) -- Wait for a short period before the next update
                     end
             
-                    humanoidRootPart.CFrame = endCFrame -- Ensure final position is set
+                    humanoidRootPart.CFrame = endCFrame -- Ensure exact arrival at the target position
+                else
+                    warn("Job has not started yet. Cannot fly to coordinates.")
                 end
             else
-                warn("HumanoidRootPart not found.")
+                warn("HumanoidRootPart not found in character.")
             end
         end
         
@@ -229,60 +231,55 @@ local function StartAutoFarmTruck()
         local targetHorsepower = {114, 134} -- List of target horsepower values
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
-            if tptotruck == true then -- Fixed conditional to use '==' for comparison
-                local truckSpawned = false -- Flag to indicate if the truck has been spawned
+            local truckSpawned = false -- Flag to indicate if the truck has been spawned
 
-                while true do
-                    -- Fire the Proximity Prompt
-                    fireproximityprompt(spawnPrompt) -- Trigger the Proximity Prompt
-                    wait(5) -- Wait for a short duration to allow for the truck to spawn
+            while not truckSpawned do
+                -- Fire the Proximity Prompt
+                fireproximityprompt(spawnPrompt) -- Trigger the Proximity Prompt
+                wait(5) -- Wait for a short duration to allow for the truck to spawn
 
-                    -- Check the player's truck's horsepower
-                    local vehicleName = player.Name .. "'sCar" -- Corrected vehicle name with apostrophe
+                -- Check the player's truck's horsepower
+                local vehicleName = player.Name .. "'sCar" -- Corrected vehicle name with apostrophe
 
-                    -- Function to check horsepower
-                    local function checkHorsepower()
-                        local vehicle = workspace.Vehicles:FindFirstChild(vehicleName) -- Get the vehicle
-                        if vehicle then
-                            local customizeable = vehicle:FindFirstChild("Customizeable") -- Find the Customizeable folder
-                            if customizeable then
-                                local horsepower = customizeable:FindFirstChild("Horsepower") -- Find the Horsepower IntValue
-                                if horsepower and horsepower:IsA("IntValue") then
-                                    -- Access the horsepower value
-                                    local currentHorsepower = horsepower.Value
-                                    print(string.format("Current horsepower for %s: %d", vehicleName, currentHorsepower)) -- Print the current horsepower
-                                    
-                                    -- Check if the horsepower is equal to either 114 or 134
-                                    if currentHorsepower == targetHorsepower[1] or currentHorsepower == targetHorsepower[2] then
-                                        print(string.format("Success: Desired horsepower reached: %d", currentHorsepower)) -- Print the desired horsepower
-                                        truckSpawned = true -- Set the flag indicating the truck has spawned successfully
-                                        return true -- Return true if desired horsepower is reached
-                                    else
-                                        print("Notice: Not the desired horsepower, re-spawning truck.")
-                                    end
+                -- Function to check horsepower
+                local function checkHorsepower()
+                    local vehicle = workspace.Vehicles:FindFirstChild(vehicleName) -- Get the vehicle
+                    if vehicle then
+                        local customizeable = vehicle:FindFirstChild("Customizeable") -- Find the Customizeable folder
+                        if customizeable then
+                            local horsepower = customizeable:FindFirstChild("Horsepower") -- Find the Horsepower IntValue
+                            if horsepower and horsepower:IsA("IntValue") then
+                                local currentHorsepower = horsepower.Value -- Access the horsepower value
+                                print(string.format("Current horsepower for %s: %d", vehicleName, currentHorsepower)) -- Print the current horsepower
+                                
+                                -- Check if the horsepower is equal to either 114 or 134
+                                if currentHorsepower == targetHorsepower[1] or currentHorsepower == targetHorsepower[2] then
+                                    print(string.format("Success: Desired horsepower reached: %d", currentHorsepower)) -- Print the desired horsepower
+                                    truckSpawned = true -- Set the flag indicating the truck has spawned successfully
+                                    return true -- Return true if desired horsepower is reached
                                 else
-                                    warn("Warning: Horsepower does not exist or is not an IntValue.")
+                                    print("Notice: Not the desired horsepower, re-spawning truck.")
                                 end
                             else
-                                warn("Warning: Customizeable folder not found in vehicle.")
+                                warn("Warning: Horsepower does not exist or is not an IntValue.")
                             end
                         else
-                            warn("Warning: Vehicle not found.")
+                            warn("Warning: Customizeable folder not found in vehicle.")
                         end
-                        
-                        return false -- Return false if checks fail
-                    end
-
-                    -- Execute the check
-                    if checkHorsepower() then
-                        break -- Exit the loop if the desired horsepower is reached
+                    else
+                        warn("Warning: Vehicle not found.")
                     end
                     
-                    -- Wait before trying again to avoid rapid triggering
-                    wait(3) -- Optional: Adjust this wait time if necessary
+                    return false -- Return false if checks fail
                 end
-            else
-                warn("Warning: ProximityPrompt for spawning truck not found or invalid.")
+
+                -- Execute the check
+                if checkHorsepower() then
+                    break -- Exit the loop if the desired horsepower is reached
+                end
+                
+                -- Wait before trying again to avoid rapid triggering
+                wait(3) -- Optional: Adjust this wait time if necessary
             end
 
             -- After the truck has spawned successfully, proceed to drive the truck
@@ -309,11 +306,13 @@ local function StartAutoFarmTruck()
                     return
                 end
             end
+        else
+            warn("Warning: ProximityPrompt for spawning truck not found or invalid.")
         end
     end)() -- Invoke the coroutine immediately
 end
 
-isautofarmactive = false
+local isAutoFarmActive = false
 
 -- Toggle for starting auto farm
 local Toggle = AutofarmTab:CreateToggle({
@@ -326,7 +325,7 @@ local Toggle = AutofarmTab:CreateToggle({
             local teleportTimeValue = tonumber(teleportTime)
             if teleportTimeValue and teleportTimeValue > 0 then
                 -- Proceed with starting the AutoFarm
-                isautofarmactive = true
+                isAutoFarmActive = true
 
                 -- Start the AutoFarm for the selected job
                 if selectedJob == "Truck" then
@@ -340,7 +339,7 @@ local Toggle = AutofarmTab:CreateToggle({
                 print("Invalid Teleport Time input. Please enter a valid number greater than 0.")
             end
         else
-            isautofarmactive = false
+            isAutoFarmActive = false
 
             -- Reset Character
             local player = game.Players.LocalPlayer
@@ -354,7 +353,6 @@ local Toggle = AutofarmTab:CreateToggle({
         end
     end
 }) 
-
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
