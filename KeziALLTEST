@@ -160,23 +160,32 @@ local function StartAutoFarmTruck()
         -- Function to fly the player to the specified waypoint and hold for a duration
         local function flyToWaypoint(flyDuration, holdDuration)
             local playerName = player.Name -- Get the player's name
-            local humanoidRootPart = workspace:WaitForChild("Lives"):WaitForChild(playerName):WaitForChild("HumanoidRootPart")
-            local waypoint = workspace:WaitForChild("Etc"):WaitForChild("Waypoint"):WaitForChild("Waypoint")
+            local humanoidRootPart = workspace:FindFirstChild("Lives") and workspace.Lives:FindFirstChild(playerName) and workspace.Lives.[playerName]:FindFirstChild("HumanoidRootPart")
+            local waypoint = workspace:FindFirstChild("Etc") and workspace.Etc:FindFirstChild("Waypoint") and workspace.Etc.Waypoint:FindFirstChild("Waypoint")
 
+            -- Check if both humanoidRootPart and waypoint are valid
             if humanoidRootPart and waypoint then
-                local startCFrame, endCFrame = humanoidRootPart.CFrame, waypoint.CFrame
-                local startTime = tick()
+                local startCFrame = humanoidRootPart.CFrame -- Starting position and orientation
+                local endCFrame = waypoint.CFrame -- Destination position and orientation
+                local startTime = tick() -- Record the start time
 
                 -- Fly to the waypoint
                 while tick() - startTime < flyDuration do
-                    humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, (tick() - startTime) / flyDuration)
-                    wait(0.03)
+                    local alpha = (tick() - startTime) / flyDuration -- Calculate interpolation factor
+                    humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, alpha) -- Lerp between start and end positions
+                    wait(0.03) -- Wait a short period for smoother transition
                 end
                 
-                humanoidRootPart.CFrame = endCFrame -- Ensure exact arrival
-                wait(holdDuration) -- Hold at waypoint
+                humanoidRootPart.CFrame = endCFrame -- Ensure exact arrival at the waypoint
+                wait(holdDuration) -- Hold at waypoint for the specified duration
             else
-                warn("HumanoidRootPart or waypoint not found.")
+                -- Provide detailed warnings to help debug the issue
+                if not humanoidRootPart then
+                    warn("HumanoidRootPart not found for player: " .. playerName)
+                end
+                if not waypoint then
+                    warn("Waypoint not found in workspace.")
+                end
             end
         end
 
