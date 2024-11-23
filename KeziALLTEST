@@ -111,14 +111,10 @@ local Dropdown = AutofarmTab:CreateDropdown({
     end,
 })
 
--- Default values for teleport times
-local defaultTeleportTime = 50 -- Default teleport time in seconds
-local defaultTeleportPTShadTime = 15 -- Default teleport to PT SHAD time in seconds
-
 -- Input for teleport time
 local Input = AutofarmTab:CreateInput({
     Name = "Teleport Time",
-    CurrentValue = tostring(defaultTeleportTime), -- Set the default teleport time
+    CurrentValue = teleportTime,
     PlaceholderText = "Teleport Time (in seconds)",
     RemoveTextAfterFocusLost = false,
     Flag = "Input1",
@@ -130,15 +126,14 @@ local Input = AutofarmTab:CreateInput({
 -- Input for teleport to pt shad time
 local Input2 = AutofarmTab:CreateInput({
     Name = "Teleport To PT SHAD Time",
-    CurrentValue = tostring(defaultTeleportPTShadTime), -- Set the default PT SHAD time
+    CurrentValue = teleportptshadTime,
     PlaceholderText = "Teleport To PT SHAD Time (in seconds)",
     RemoveTextAfterFocusLost = false,
     Flag = "Input2",
     Callback = function(Text)
-        teleportptshadTime = Text -- Update teleport PT SHAD time based on input
+        teleportptshadTime = Text -- Update teleport pt shad time based on input
     end,
 })
-
 
 -- Create Truck AutoFarm Function
 local function StartAutoFarmTruck()
@@ -193,8 +188,6 @@ local function StartAutoFarmTruck()
             end
         end
 
-        -- Delay before triggering the prompt
-        wait(2) -- Wait 2 seconds
         triggerPrompt() -- Call the function to trigger the prompt
 
         -- Spawn Truck (Proximity Prompt)
@@ -276,6 +269,9 @@ local Toggle = AutofarmTab:CreateToggle({
             if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
                 player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Set health to 0 to reset the character
             end
+
+            local args = {[1] = "Unemployee"}
+            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))            
         end
     end
 })
