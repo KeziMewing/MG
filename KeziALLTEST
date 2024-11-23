@@ -121,7 +121,11 @@ local Input = AutofarmTab:CreateInput({
     RemoveTextAfterFocusLost = false,
     Flag = "Input1",
     Callback = function(Text)
-        teleportTime = Text -- Update teleport time based on input
+        teleportTime = tonumber(Text) -- Update teleport time based on input
+        if not teleportTime or teleportTime <= 0 then
+            warn("Invalid teleport time entered. Please enter a number greater than 0.")
+            teleportTime = "" -- Reset if invalid
+        end
     end,
 })
 
@@ -133,7 +137,11 @@ local Input2 = AutofarmTab:CreateInput({
     RemoveTextAfterFocusLost = false,
     Flag = "Input2",
     Callback = function(Text)
-        teleportptshadTime = Text -- Update teleport pt shad time based on input
+        teleportptshadTime = tonumber(Text) -- Update teleport pt shad time based on input
+        if not teleportptshadTime or teleportptshadTime <= 0 then
+            warn("Invalid PT SHAD time entered. Please enter a number greater than 0.")
+            teleportptshadTime = "" -- Reset if invalid
+        end
     end,
 })
 
@@ -181,7 +189,9 @@ local function StartAutoFarmTruck()
                 -- Fire the Proximity Prompt if teleport flag is set
                 if isTeleportToPTShad then
                     startJob = true
-                    fireproximityprompt(prompt) -- Simulate the user interaction
+                    prompt:InputHoldBegin() -- Simulate the user interaction
+                    wait(0.1) -- Simulate hold time
+                    prompt:InputHoldEnd() -- End the interaction
                     print("Proximity prompt fired for: " .. prompt.Name)
                 end
             else
@@ -227,7 +237,7 @@ local function StartAutoFarmTruck()
         flyToCoordinates(targetPosition, duration) -- Call the function
 
         -- Spawn Truck
-        local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part.Prompt
+        local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part:WaitForChild("Prompt") -- Ensure we get the Prompt correctly
         local targetHorsepower = {114, 134} -- List of target horsepower values
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
@@ -235,7 +245,9 @@ local function StartAutoFarmTruck()
 
             while not truckSpawned do
                 -- Fire the Proximity Prompt
-                fireproximityprompt(spawnPrompt) -- Trigger the Proximity Prompt
+                spawnPrompt:InputHoldBegin() -- Simulate the user interaction
+                wait(0.1) -- Simulate hold time
+                spawnPrompt:InputHoldEnd() -- End the interaction
                 wait(5) -- Wait for a short duration to allow for the truck to spawn
 
                 -- Check the player's truck's horsepower
@@ -252,6 +264,7 @@ local function StartAutoFarmTruck()
                                 local currentHorsepower = horsepower.Value -- Access the horsepower value
                                 print(string.format("Current horsepower for %s: %d", vehicleName, currentHorsepower)) -- Print the current horsepower
                                 
+
                                 -- Check if the horsepower is equal to either 114 or 134
                                 if currentHorsepower == targetHorsepower[1] or currentHorsepower == targetHorsepower[2] then
                                     print(string.format("Success: Desired horsepower reached: %d", currentHorsepower)) -- Print the desired horsepower
@@ -291,7 +304,9 @@ local function StartAutoFarmTruck()
                     if driveSeat then
                         local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
                         if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
-                            fireproximityprompt(getInPrompt)
+                            getInPrompt:InputHoldBegin() -- Simulate user interaction to enter the truck
+                            wait(0.1) -- Simulate hold time
+                            getInPrompt:InputHoldEnd() -- End the interaction
                             wait(10) -- Wait for the player to get in the truck
                         else
                             warn("Warning: Drive seat prompt not found or invalid.")
@@ -352,7 +367,8 @@ local Toggle = AutofarmTab:CreateToggle({
             game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))            
         end
     end
-}) 
+})
+
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
