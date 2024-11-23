@@ -518,7 +518,7 @@ MinigamesTab:CreateToggle({
 })
 
 -- Tab for Settings
-local SettingsTab = Window:CreateTab("Tab Example", 4483362458) -- Title, Image
+local SettingsTab = Window:CreateTab("Settings", 4483362458) -- Title, Image
 
 -- Section
 local Section = SettingsTab:CreateSection("Hub Enabled / Disabled")
