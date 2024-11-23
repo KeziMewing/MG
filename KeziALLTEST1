@@ -228,13 +228,15 @@ local function StartAutoFarmTruck()
         local duration = 1 -- Duration in seconds
         
         flyToCoordinates(targetPosition, duration) -- Call the function        
-
+        
         -- Spawn Truck
         local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part.Prompt
         local player = game.Players.LocalPlayer
         local targetHorsepower = {114, 134} -- List of target horsepower values
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
+            local truckSpawned = false -- Flag to indicate if the truck has been spawned
+            
             while true do
                 -- Fire the Proximity Prompt
                 fireproximityprompt(spawnPrompt) -- Trigger the Proximity Prompt
@@ -260,6 +262,7 @@ local function StartAutoFarmTruck()
                             -- Check if the horsepower is equal to either 114 or 134
                             if currentHorsepower == targetHorsepower[1] or currentHorsepower == targetHorsepower[2] then
                                 print(string.format("Success: Desired horsepower reached: %d", currentHorsepower)) -- Print the desired horsepower
+                                truckSpawned = true -- Set the flag indicating the truck has spawned successfully
                                 break -- Exit the loop if the condition is met
                             else
                                 print("Notice: Not the desired horsepower, re-spawning truck.")
@@ -275,33 +278,32 @@ local function StartAutoFarmTruck()
                 end
                 
                 -- Wait before trying again to avoid rapid triggering
-                wait(2) -- Optional: Adjust this wait time if necessary
+                wait(3) -- Optional: Adjust this wait time if necessary
             end
-        else
-            warn("Warning: ProximityPrompt for spawning truck not found or invalid.")
-        end
 
-        -- Drive Truck (Proximity Prompt)
-        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
-        if vehicle then
-            local driveSeat = vehicle:FindFirstChild("DriveSeat")
-            if driveSeat then
-                local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
-                if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
-                    fireproximityprompt(getInPrompt)
-                    wait(10) -- Wait for the player to get in the truck
+            -- After the truck has spawned successfully, proceed to drive the truck
+            if truckSpawned then
+                -- Drive Truck (Proximity Prompt)
+                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
+                if vehicle then
+                    local driveSeat = vehicle:FindFirstChild("DriveSeat")
+                    if driveSeat then
+                        local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
+                        if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
+                            fireproximityprompt(getInPrompt)
+                            wait(10) -- Wait for the player to get in the truck
+                        else
+                            return
+                        end
+                    else
+                        return
+                    end
                 else
-                    warn("ProximityPrompt for driving truck not found or invalid.")
                     return
                 end
-            else
-                warn("DriveSeat not found in vehicle.")
-                return
             end
-        else
-            warn("Vehicle not found.")
-            return
         end
+
     end)() -- Invoke the coroutine immediately
 end
 
