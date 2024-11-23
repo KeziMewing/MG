@@ -540,7 +540,6 @@ local Section = SettingsTab:CreateSection("Hub Enabled / Disabled")
 -- Destroy Button
 local Button = SettingsTab:CreateButton({
     Name = "Delete UI",
-    Content = "Thank you for using Kezi Hub"
     Callback = function()
         Rayfield:Destroy()
     end,
