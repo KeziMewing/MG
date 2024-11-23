@@ -181,7 +181,6 @@ local function StartAutoFarmTruck()
         
         -- Spawn Truck
         local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part.Prompt
-        local player = game.Players.LocalPlayer
         local targetHorsepower = {114, 134} -- List of target horsepower values
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
@@ -193,7 +192,7 @@ local function StartAutoFarmTruck()
                 wait(5) -- Wait for a short duration to allow for the truck to spawn
 
                 -- Check the player's truck's horsepower
-                local vehicleName = player.Name .. "sCar" -- Construct the vehicle name dynamically
+                local vehicleName = player.Name .. "'sCar" -- Corrected vehicle name with apostrophe
 
                 -- Function to check horsepower
                 local function checkHorsepower()
@@ -240,26 +239,28 @@ local function StartAutoFarmTruck()
             warn("Warning: ProximityPrompt for spawning truck not found or invalid.")
         end
 
-            -- After the truck has spawned successfully, proceed to drive the truck
-            if truckSpawned then
-                -- Drive Truck (Proximity Prompt)
-                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
-                if vehicle then
-                    local driveSeat = vehicle:FindFirstChild("DriveSeat")
-                    if driveSeat then
-                        local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
-                        if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
-                            fireproximityprompt(getInPrompt)
-                            wait(10) -- Wait for the player to get in the truck
-                        else
-                            return
-                        end
+        -- After the truck has spawned successfully, proceed to drive the truck
+        if truckSpawned then
+            -- Drive Truck (Proximity Prompt)
+            local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
+            if vehicle then
+                local driveSeat = vehicle:FindFirstChild("DriveSeat")
+                if driveSeat then
+                    local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
+                    if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
+                        fireproximityprompt(getInPrompt)
+                        wait(10) -- Wait for the player to get in the truck
                     else
+                        warn("Warning: Drive seat prompt not found or invalid.")
                         return
                     end
                 else
+                    warn("Warning: Drive seat not found in vehicle.")
                     return
                 end
+            else
+                warn("Warning: Vehicle not found.")
+                return
             end
         end
 
@@ -487,6 +488,7 @@ local Section = SettingsTab:CreateSection("Hub Enabled / Disabled")
 -- Destroy Button
 local Button = SettingsTab:CreateButton({
     Name = "Delete UI",
+    Content = "Thank you for using Kezi Hub",
     Callback = function()
         Rayfield:Destroy()
     end,
