@@ -170,10 +170,12 @@ local function StartAutoFarmTruck()
         -- Start flying to the waypoint
         local function startFlyingToWaypoint()
             local flyDuration = tonumber(teleportptshadTime) or 0 -- Duration in seconds
-            if flyDuration > 0 then flyToWaypoint(flyDuration, 5) end -- Default hold duration is 5 seconds
+            if flyDuration > 0 then 
+                flyToWaypoint(flyDuration, 5) -- Default hold duration is 5 seconds 
+            end
         end
 
-        startFlyingToWaypoint()
+        startFlyingToWaypoint() -- Trigger fly to waypoint
 
         -- Start Job
         local promptPart = workspace.Etc.Job.Truck.Starter -- Path to the part with the Proximity Prompt
@@ -183,6 +185,7 @@ local function StartAutoFarmTruck()
         local function triggerPrompt()
             if prompt and prompt:IsA("ProximityPrompt") then
                 fireproximityprompt(prompt) -- Fire the Proximity Prompt
+                wait(1) -- Wait a moment for the prompt to process
             else
                 warn("Proximity Prompt not found or invalid.")
             end
@@ -190,15 +193,16 @@ local function StartAutoFarmTruck()
 
         triggerPrompt() -- Call the function to trigger the prompt
 
+        -- Wait for a moment after triggering the prompt to ensure it processes
+        wait(2) 
+
         -- Spawn Truck (Proximity Prompt)
         local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part.Prompt
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
             while true do
                 fireproximityprompt(spawnPrompt) -- Trigger the Proximity Prompt
-                
-                -- Wait a bit before triggering again to avoid spam
-                wait(2) 
+                wait(2) -- Wait a bit before triggering again to avoid spam
                 
                 -- Check the player's truck's horsepower
                 local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar") -- Assuming the naming convention is "{PlayerName}'sCar"
@@ -208,6 +212,8 @@ local function StartAutoFarmTruck()
                         print("Desired horsepower reached:", horsepower)
                         break -- Exit the loop if the condition is met
                     end
+                else
+                    warn("Vehicle or horsepower not found.")
                 end
             end
         else
