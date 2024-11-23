@@ -141,7 +141,7 @@ local function StartAutoFarmTruck()
         local player = game.Players.LocalPlayer
         
         -- Fire server event to start the job
-        local args = { [1] = "Truck" }
+        local args = { [1] = selectedJob } -- Use selectedJob directly
         game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))
 
         -- Function to fly the player to the specified waypoint and hold for a duration
@@ -176,27 +176,23 @@ local function StartAutoFarmTruck()
         startFlyingToWaypoint()
 
         -- Start Job
-        local player = game.Players.LocalPlayer
         local promptPart = workspace.Etc.Job.Truck.Starter -- Path to the part with the Proximity Prompt
-
-        -- Wait for the Proximity Prompt to be available
-        local prompt = promptPart:WaitForChild("Prompt") 
+        local prompt = promptPart:WaitForChild("Prompt") -- Get the Proximity Prompt
 
         -- Function to trigger the Proximity Prompt
         local function triggerPrompt()
             if prompt and prompt:IsA("ProximityPrompt") then
-                -- Fire the Proximity Prompt
-                fireproximityprompt(prompt) 
-                print("Proximity Prompt triggered.")
+                fireproximityprompt(prompt) -- Fire the Proximity Prompt
             else
                 warn("Proximity Prompt not found or invalid.")
             end
         end
 
+        -- Delay before triggering the prompt
+        wait(2) -- Wait 2 seconds
         triggerPrompt() -- Call the function to trigger the prompt
 
         -- Spawn Truck (Proximity Prompt)
-        local player = game.Players.LocalPlayer
         local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part.Prompt
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
@@ -221,25 +217,25 @@ local function StartAutoFarmTruck()
         end
 
         -- Drive Truck (Proximity Prompt)
-        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "sCar")
+        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
         if vehicle then
             local driveSeat = vehicle:FindFirstChild("DriveSeat")
             if driveSeat then
                 local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
-                    if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
-                        fireproximityprompt(getInPrompt)
-                            wait(10) -- Wait for the player to get in the truck
-                    else
-                            warn("ProximityPrompt for driving truck not found or invalid.")
-                            return
-                    end
-            else
-                    warn("DriveSeat not found in vehicle.")
+                if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
+                    fireproximityprompt(getInPrompt)
+                    wait(10) -- Wait for the player to get in the truck
+                else
+                    warn("ProximityPrompt for driving truck not found or invalid.")
                     return
+                end
+            else
+                warn("DriveSeat not found in vehicle.")
+                return
             end
         else
-                warn("Vehicle not found.")
-                return
+            warn("Vehicle not found.")
+            return
         end
     end)() -- Invoke the coroutine immediately
 end
@@ -278,6 +274,7 @@ local Toggle = AutofarmTab:CreateToggle({
         end
     end
 })
+
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
