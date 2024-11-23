@@ -229,23 +229,32 @@ local function StartAutoFarmTruck()
 
         -- Spawn Truck (Proximity Prompt)
         local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part.Prompt
-        local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
+        local player = game.Players.LocalPlayer
+        local targetHorsepower = {114, 134} -- List of target horsepower values
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
             while true do
+                -- Fire the Proximity Prompt
                 fireproximityprompt(spawnPrompt) -- Trigger the Proximity Prompt
-                wait(2) -- Wait a bit before triggering again to avoid spam
-                
+
+                -- Wait for a short duration to allow for the truck to spawn
+                wait(5) -- Adjust the wait time as needed for your game mechanics
+
                 -- Check the player's truck's horsepower
+                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar") -- Get the vehicle
                 if vehicle and vehicle.Customizeable and vehicle.Customizeable.Horsepower then
-                    local horsepower = vehicle.Customizeable.Horsepower.Value
-                    if horsepower >= 114 and horsepower <= 134 then
-                        print("Desired horsepower reached:", horsepower)
+                    local horsepower = vehicle.Customizeable.Horsepower.Value -- Access the horsepower value
+                    
+                    -- Check if the horsepower is equal to either 114 or 134
+                    if horsepower == targetHorsepower[1] or horsepower == targetHorsepower[2] then
+                        print("Desired horsepower reached:", horsepower) -- Print the desired horsepower
                         break -- Exit the loop if the condition is met
                     end
                 else
                     warn("Vehicle or horsepower not found.")
                 end
+                
+                wait(7) -- Wait before trying again
             end
         else
             warn("ProximityPrompt for spawning truck not found or invalid.")
