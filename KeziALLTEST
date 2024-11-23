@@ -305,6 +305,8 @@ local function StartAutoFarmTruck()
     end)() -- Invoke the coroutine immediately
 end
 
+isautofarmactive = false
+
 -- Toggle for starting auto farm
 local Toggle = AutofarmTab:CreateToggle({
     Name = "Start AutoFarm",
@@ -316,7 +318,7 @@ local Toggle = AutofarmTab:CreateToggle({
             local teleportTimeValue = tonumber(teleportTime)
             if teleportTimeValue and teleportTimeValue > 0 then
                 -- Proceed with starting the AutoFarm
-                print("Starting AutoFarm for job: " .. selectedJob .. " with teleport time: " .. teleportTimeValue .. " seconds.")
+                isautofarmactive = true
 
                 -- Start the AutoFarm for the selected job
                 if selectedJob == "Truck" then
@@ -330,8 +332,7 @@ local Toggle = AutofarmTab:CreateToggle({
                 print("Invalid Teleport Time input. Please enter a valid number greater than 0.")
             end
         else
-            -- Stop AutoFarm
-            StartAutoFarmTruck = false
+            isautofarmactive = false
 
             -- Reset Character
             local player = game.Players.LocalPlayer
@@ -345,6 +346,7 @@ local Toggle = AutofarmTab:CreateToggle({
         end
     end
 })
+
 
 -- Tab for Minigames
 local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
@@ -513,6 +515,20 @@ MinigamesTab:CreateToggle({
             leaveMinigame("2021Avanza15CVT")
         end
     end
+})
+
+-- Tab for Settings
+local SettingsTab = Window:CreateTab("Tab Example", 4483362458) -- Title, Image
+
+-- Section
+local Section = SettingsTab:CreateSection("Hub Enabled / Disabled")
+
+-- Destroy Button
+local Button = SettingsTab:CreateButton({
+    Name = "Delete UI",
+    Callback = function()
+        Rayfield:Destroy()
+    end,
 })
 
 -- Ensure UI persists on character reset
