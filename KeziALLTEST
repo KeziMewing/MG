@@ -177,17 +177,22 @@ local function StartAutoFarmTruck()
 
         -- Start Job
         local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
         local promptPart = workspace.Etc.Job.Truck.Starter -- Path to the part with the Proximity Prompt
-        local prompt = promptPart:WaitForChild("Prompt") -- Get the Proximity Prompt
+
+        -- Wait for the Proximity Prompt to be available
+        local prompt = promptPart:WaitForChild("Prompt") 
 
         -- Function to trigger the Proximity Prompt
         local function triggerPrompt()
-            prompt:Trigger() -- Simulate triggering the prompt
+            if prompt and prompt:IsA("ProximityPrompt") then
+                -- Fire the Proximity Prompt
+                fireproximityprompt(prompt) 
+                print("Proximity Prompt triggered.")
+            else
+                warn("Proximity Prompt not found or invalid.")
+            end
         end
 
-        -- Delay before triggering the prompt
-        wait(2) -- Wait 2 seconds
         triggerPrompt() -- Call the function to trigger the prompt
 
         -- Spawn Truck (Proximity Prompt)
