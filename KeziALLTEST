@@ -246,23 +246,27 @@ local function StartAutoFarmTruck()
                 if vehicle and vehicle:FindFirstChild("Customizeable") and vehicle.Customizeable:FindFirstChild("Horsepower") then
                     local horsepower = vehicle.Customizeable.Horsepower.Value -- Access the horsepower value
                     
+                    -- Always print the current horsepower
+                    print(string.format("Current horsepower: %d", horsepower))
+        
                     -- Check if the horsepower is equal to either 114 or 134
                     if horsepower == targetHorsepower[1] or horsepower == targetHorsepower[2] then
-                        print("Desired horsepower reached:", horsepower) -- Print the desired horsepower
+                        print(string.format("Success: Desired horsepower reached: %d", horsepower)) -- Print the desired horsepower
                         break -- Exit the loop if the condition is met
                     else
-                        print("Current horsepower:", horsepower, "- Not the desired value, re-spawning truck.")
+                        print("Notice: Not the desired horsepower, re-spawning truck.")
                     end
                 else
-                    warn("Vehicle or horsepower not found. Waiting to try again.")
+                    warn("Warning: Vehicle or horsepower not found. Waiting to try again.")
                 end
                 
                 -- Wait before trying again to avoid rapid triggering
-                wait(5) -- Optional: Adjust this wait time if necessary
+                wait(2) -- Optional: Adjust this wait time if necessary
             end
         else
-            warn("ProximityPrompt for spawning truck not found or invalid.")
+            warn("Warning: ProximityPrompt for spawning truck not found or invalid.")
         end
+        
         
 
         -- Drive Truck (Proximity Prompt)
