@@ -226,6 +226,8 @@ local function StartAutoFarmTruck()
         local duration = 1 -- Duration in seconds
         
         flyToCoordinates(targetPosition, duration) -- Call the function        
+
+        -- Spawn Truck
         local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part.Prompt
         local player = game.Players.LocalPlayer
         local targetHorsepower = {114, 134} -- List of target horsepower values
@@ -252,15 +254,16 @@ local function StartAutoFarmTruck()
                         print("Current horsepower:", horsepower, "- Not the desired value, re-spawning truck.")
                     end
                 else
-                    warn("Vehicle or horsepower not found.")
+                    warn("Vehicle or horsepower not found. Waiting to try again.")
                 end
                 
-                wait(2) -- Optional: Wait before trying again to avoid rapid triggering
+                -- Wait before trying again to avoid rapid triggering
+                wait(5) -- Optional: Adjust this wait time if necessary
             end
         else
             warn("ProximityPrompt for spawning truck not found or invalid.")
         end
-            
+        
 
         -- Drive Truck (Proximity Prompt)
         local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
