@@ -237,7 +237,7 @@ local function StartAutoFarmTruck()
         flyToCoordinates(targetPosition, duration) -- Call the function
 
         -- Spawn Truck
-        local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5].Part:WaitForChild("Prompt") -- Ensure we get the Prompt correctly
+        local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5]:WaitForChild("Prompt") -- Ensure we get the Prompt correctly
         local targetHorsepower = {114, 134} -- List of target horsepower values
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
