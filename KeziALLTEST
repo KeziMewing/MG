@@ -141,12 +141,14 @@ local Input2 = AutofarmTab:CreateInput({
 local function StartAutoFarmTruck()
     coroutine.wrap(function()
         local player = game.Players.LocalPlayer
-        
+
         -- Fire server event to start the job
         local args = { [1] = selectedJob } -- Use selectedJob directly
         game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))
 
-        local isteleporttoptshad = false
+        local isTeleportToPTShad = false -- Initialize teleport flag
+        local startJob = false -- Initialize job start flag
+
         -- Function to fly the player to the specified waypoint and hold for a duration
         local function flyToWaypoint(flyDuration, holdDuration)
             local character = player.Character or player.CharacterAdded:Wait()
@@ -170,36 +172,33 @@ local function StartAutoFarmTruck()
             end
         end
 
-        lcoal startjob = false
         -- Start Job
         local prompt = workspace.Etc.Job.Truck.Starter:WaitForChild("Prompt") -- Get the ProximityPrompt
 
         -- Function to fire the Proximity Prompt
-        local function fireProximityPrompt(prompt)
+        local function fireProximityPrompt()
             if prompt and prompt:IsA("ProximityPrompt") then
-                if isteleporttoptshad == true then
-                    -- Fire the Proximity Prompt
-                    startjob = true
-                    fireproximityprompt(prompt) -- This function simulates the user interaction
+                -- Fire the Proximity Prompt if teleport flag is set
+                if isTeleportToPTShad then
+                    startJob = true
+                    fireproximityprompt(prompt) -- Simulate the user interaction
                     print("Proximity prompt fired for: " .. prompt.Name)
                 end
             else
                 warn("Provided object is not a valid ProximityPrompt.")
             end
         end
-        -- Call the function to fire the Proximity Prompt
-        fireProximityPrompt(prompt)
         
-        local tptotruck = false
-        -- Fly To Trucks
+        -- Call the function to fire the Proximity Prompt
+        fireProximityPrompt()
+
+        -- Fly to Trucks function
         local function flyToCoordinates(targetPosition, duration)
-            local player = game.Players.LocalPlayer
             local character = player.Character or player.CharacterAdded:Wait()
             local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
         
             if humanoidRootPart then
-                if startjob = true then
-                    tptotruck = true
+                if startJob then -- Fixed conditional to use '==' for comparison
                     local startCFrame = humanoidRootPart.CFrame -- Get the current position and orientation
                     local endCFrame = CFrame.new(targetPosition) -- Create CFrame with the target position
             
@@ -213,9 +212,10 @@ local function StartAutoFarmTruck()
                     end
             
                     humanoidRootPart.CFrame = endCFrame -- Ensure final position is set
-                else
-                    warn("HumanoidRootPart not found.")
                 end
+            else
+                warn("HumanoidRootPart not found.")
+            end
         end
         
         -- Usage
@@ -229,7 +229,7 @@ local function StartAutoFarmTruck()
         local targetHorsepower = {114, 134} -- List of target horsepower values
 
         if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
-            if tptotruck = true then
+            if tptotruck == true then -- Fixed conditional to use '==' for comparison
                 local truckSpawned = false -- Flag to indicate if the truck has been spawned
 
                 while true do
@@ -281,39 +281,40 @@ local function StartAutoFarmTruck()
                     -- Wait before trying again to avoid rapid triggering
                     wait(3) -- Optional: Adjust this wait time if necessary
                 end
-        else
-            warn("Warning: ProximityPrompt for spawning truck not found or invalid.")
-        end
+            else
+                warn("Warning: ProximityPrompt for spawning truck not found or invalid.")
+            end
 
-        -- After the truck has spawned successfully, proceed to drive the truck
-        if truckSpawned then
-            -- Drive Truck (Proximity Prompt)
-            local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
-            if vehicle then
-                local driveSeat = vehicle:FindFirstChild("DriveSeat")
-                if driveSeat then
-                    local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
-                    if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
-                        fireproximityprompt(getInPrompt)
-                        wait(10) -- Wait for the player to get in the truck
+            -- After the truck has spawned successfully, proceed to drive the truck
+            if truckSpawned then
+                -- Drive Truck (Proximity Prompt)
+                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
+                if vehicle then
+                    local driveSeat = vehicle:FindFirstChild("DriveSeat")
+                    if driveSeat then
+                        local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
+                        if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
+                            fireproximityprompt(getInPrompt)
+                            wait(10) -- Wait for the player to get in the truck
+                        else
+                            warn("Warning: Drive seat prompt not found or invalid.")
+                            return
+                        end
                     else
-                        warn("Warning: Drive seat prompt not found or invalid.")
+                        warn("Warning: Drive seat not found in vehicle.")
                         return
                     end
                 else
-                    warn("Warning: Drive seat not found in vehicle.")
+                    warn("Warning: Vehicle not found.")
                     return
                 end
-            else
-                warn("Warning: Vehicle not found.")
-                return
             end
         end
-
     end)() -- Invoke the coroutine immediately
 end
 
 isautofarmactive = false
+
 -- Toggle for starting auto farm
 local Toggle = AutofarmTab:CreateToggle({
     Name = "Start AutoFarm",
@@ -352,7 +353,7 @@ local Toggle = AutofarmTab:CreateToggle({
             game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))            
         end
     end
-})
+}) 
 
 
 -- Tab for Minigames
