@@ -17,7 +17,6 @@ local function notifyLoop()
             Duration = 6.5,  -- Duration of the notification
             Image = 4483362458,  -- Icon ID for the notification
         })
-        
         wait(90)  -- Wait 90 seconds before showing the notification again
     end
 end
@@ -40,6 +39,12 @@ local Window = Rayfield:CreateWindow({
 
 -- SCRIPTS HERE
 
+-- Variables to track elapsed time and points collected
+local elapsedTime = 0
+local pointsCollected = 0
+local isMiniGameWinActive = false -- Define the mini-game status variables
+local isMiniGameLoseActive = false
+
 -- Tab for Monitoring
 local MonitoringTab = Window:CreateTab("Monitoring", 4483362458) -- Title and icon
 
@@ -49,10 +54,6 @@ MonitoringTab:CreateSection("Minigame Monitoring")
 -- Create Labels to show the stats in the UI
 local elapsedTimeLabel = MonitoringTab:CreateLabel("Elapsed Time: 00:00:00")
 local pointsCollectedLabel = MonitoringTab:CreateLabel("Points Collected: 0")
-
--- Variables to track elapsed time and points collected
-local elapsedTime = 0
-local pointsCollected = 0
 
 -- Update the elapsed time and points collected every second
 game:GetService("RunService").Heartbeat:Connect(function()
@@ -96,8 +97,8 @@ game.Players.LocalPlayer.CharacterAdded:Connect(onCharacterReset)
 local AutofarmTab = Window:CreateTab("Auto Farm", 4483362458) -- Title and icon
 
 local selectedJob = "Truck" -- Default selected job
-local teleportTime = "40" -- Initialize teleport time variable
-local teleportptshadTime = "5" -- Initialize Teleport PT SHAD Time variable
+local teleportTime = 40 -- Initialize teleport time variable
+local teleportptshadTime = 5 -- Initialize Teleport PT SHAD Time variable
 
 -- Dropdown for job selection
 local Dropdown = AutofarmTab:CreateDropdown({
@@ -116,15 +117,17 @@ local Dropdown = AutofarmTab:CreateDropdown({
 -- Input for teleport time
 local Input = AutofarmTab:CreateInput({
     Name = "Teleport Time",
-    CurrentValue = teleportTime,
+    CurrentValue = tostring(teleportTime),
     PlaceholderText = "Teleport Time (in seconds)",
     RemoveTextAfterFocusLost = false,
     Flag = "Input1",
     Callback = function(Text)
-        teleportTime = tonumber(Text) -- Update teleport time based on input
-        if not teleportTime or teleportTime <= 0 then
+        local value = tonumber(Text)
+        if value and value > 0 then
+            teleportTime = value -- Update teleport time based on input
+        else
             warn("Invalid teleport time entered. Please enter a number greater than 0.")
-            teleportTime = "" -- Reset if invalid
+            teleportTime = 40 -- Reset to default if invalid
         end
     end,
 })
@@ -132,15 +135,17 @@ local Input = AutofarmTab:CreateInput({
 -- Input for teleport to pt shad time
 local Input2 = AutofarmTab:CreateInput({
     Name = "Teleport To PT SHAD Time",
-    CurrentValue = teleportptshadTime,
+    CurrentValue = tostring(teleportptshadTime),
     PlaceholderText = "Teleport To PT SHAD Time (in seconds)",
     RemoveTextAfterFocusLost = false,
     Flag = "Input2",
     Callback = function(Text)
-        teleportptshadTime = tonumber(Text) -- Update teleport pt shad time based on input
-        if not teleportptshadTime or teleportptshadTime <= 0 then
+        local value = tonumber(Text)
+        if value and value > 0 then
+            teleportptshadTime = value -- Update teleport pt shad time based on input
+        else
             warn("Invalid PT SHAD time entered. Please enter a number greater than 0.")
-            teleportptshadTime = "" -- Reset if invalid
+            teleportptshadTime = 5 -- Reset to default if invalid
         end
     end,
 })
@@ -218,332 +223,48 @@ local function StartAutoFarmTruck()
                     while tick() - startTime < duration do
                         local alpha = (tick() - startTime) / duration -- Calculate the interpolation factor
                         humanoidRootPart.CFrame = startCFrame:Lerp(endCFrame, alpha) -- Interpolate between the start and end CFrames
-                        wait(0.03) -- Wait for a short period before the next update
+                        wait(0.03) -- Wait briefly for smooth movement
                     end
             
-                    humanoidRootPart.CFrame = endCFrame -- Ensure exact arrival at the target position
-                else
-                    warn("Job has not started yet. Cannot fly to coordinates.")
+                    humanoidRootPart.CFrame = endCFrame -- Set the character's position to the end CFrame
                 end
             else
-                warn("HumanoidRootPart not found in character.")
+                warn("HumanoidRootPart not found.")
             end
         end
-        
-        -- Usage
-        local targetPosition = Vector3.new(-21776.6973, 1042.03174, -26780.584) -- Target coordinates
-        local duration = 1 -- Duration in seconds
-        
-        flyToCoordinates(targetPosition, duration) -- Call the function
 
-        -- Spawn Truck
-        local spawnPrompt = workspace.Etc.Job.Truck:GetChildren()[5]:WaitForChild("Prompt") -- Ensure we get the Prompt correctly
-        local targetHorsepower = {114, 134} -- List of target horsepower values
-
-        if spawnPrompt and spawnPrompt:IsA("ProximityPrompt") then
-            local truckSpawned = false -- Flag to indicate if the truck has been spawned
-
-            while not truckSpawned do
-                -- Fire the Proximity Prompt
-                spawnPrompt:InputHoldBegin() -- Simulate the user interaction
-                wait(0.1) -- Simulate hold time
-                spawnPrompt:InputHoldEnd() -- End the interaction
-                wait(5) -- Wait for a short duration to allow for the truck to spawn
-
-                -- Check the player's truck's horsepower
-                local vehicleName = player.Name .. "'sCar" -- Corrected vehicle name with apostrophe
-
-                -- Function to check horsepower
-                local function checkHorsepower()
-                    local vehicle = workspace.Vehicles:FindFirstChild(vehicleName) -- Get the vehicle
-                    if vehicle then
-                        local customizeable = vehicle:FindFirstChild("Customizeable") -- Find the Customizeable folder
-                        if customizeable then
-                            local horsepower = customizeable:FindFirstChild("Horsepower") -- Find the Horsepower IntValue
-                            if horsepower and horsepower:IsA("IntValue") then
-                                local currentHorsepower = horsepower.Value -- Access the horsepower value
-                                print(string.format("Current horsepower for %s: %d", vehicleName, currentHorsepower)) -- Print the current horsepower
-                                
-
-                                -- Check if the horsepower is equal to either 114 or 134
-                                if currentHorsepower == targetHorsepower[1] or currentHorsepower == targetHorsepower[2] then
-                                    print(string.format("Success: Desired horsepower reached: %d", currentHorsepower)) -- Print the desired horsepower
-                                    truckSpawned = true -- Set the flag indicating the truck has spawned successfully
-                                    return true -- Return true if desired horsepower is reached
-                                else
-                                    print("Notice: Not the desired horsepower, re-spawning truck.")
-                                end
-                            else
-                                warn("Warning: Horsepower does not exist or is not an IntValue.")
-                            end
-                        else
-                            warn("Warning: Customizeable folder not found in vehicle.")
-                        end
-                    else
-                        warn("Warning: Vehicle not found.")
-                    end
-                    
-                    return false -- Return false if checks fail
-                end
-
-                -- Execute the check
-                if checkHorsepower() then
-                    break -- Exit the loop if the desired horsepower is reached
-                end
-                
-                -- Wait before trying again to avoid rapid triggering
-                wait(3) -- Optional: Adjust this wait time if necessary
-            end
-
-            -- After the truck has spawned successfully, proceed to drive the truck
-            if truckSpawned then
-                -- Drive Truck (Proximity Prompt)
-                local vehicle = workspace.Vehicles:FindFirstChild(player.Name .. "'sCar")
-                if vehicle then
-                    local driveSeat = vehicle:FindFirstChild("DriveSeat")
-                    if driveSeat then
-                        local getInPrompt = driveSeat:WaitForChild("PromptDriveSeat")
-                        if getInPrompt and getInPrompt:IsA("ProximityPrompt") then
-                            getInPrompt:InputHoldBegin() -- Simulate user interaction to enter the truck
-                            wait(0.1) -- Simulate hold time
-                            getInPrompt:InputHoldEnd() -- End the interaction
-                            wait(10) -- Wait for the player to get in the truck
-                        else
-                            warn("Warning: Drive seat prompt not found or invalid.")
-                            return
-                        end
-                    else
-                        warn("Warning: Drive seat not found in vehicle.")
-                        return
-                    end
-                else
-                    warn("Warning: Vehicle not found.")
-                    return
-                end
-            end
-        else
-            warn("Warning: ProximityPrompt for spawning truck not found or invalid.")
+        -- Main AutoFarm Loop
+        while true do
+            wait(teleportTime) -- Wait before teleporting
+            isTeleportToPTShad = true -- Enable teleport flag
+            flyToWaypoint(teleportTime, teleportptshadTime) -- Fly to the waypoint
+            flyToCoordinates(Vector3.new(0, 0, 0), teleportTime) -- Move to the desired coordinates (replace with actual coords)
         end
-    end)() -- Invoke the coroutine immediately
+    end)() -- End of coroutine
 end
 
--- Toggle for starting auto farm
-local Toggle = AutofarmTab:CreateToggle({
-    Name = "Start AutoFarm",
-    CurrentValue = false,
-    Flag = "Toggle1",
-    Callback = function(Value)
-        if Value then
-            -- Validate teleport time input
-            local teleportTimeValue = tonumber(teleportTime)
-            if teleportTimeValue and teleportTimeValue > 0 then
-                -- Start the AutoFarm for the selected job
-                if selectedJob == "Truck" then
-                    StartAutoFarmTruck() -- Call the AutoFarm function for the Truck job
-                else
-                    return
-                end
-            else
-                -- Inform the user about the invalid input
-                Toggle:SetValue(false) -- Turn off the toggle if the input is invalid
-                print("Invalid Teleport Time input. Please enter a valid number greater than 0.")
-            end
-        else
-            -- Reset Character
-            local player = game.Players.LocalPlayer
-            
-            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-                player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Set health to 0 to reset the character
-            end
-
-            local args = {[1] = "Unemployee"}
-            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Job"):FireServer(unpack(args))            
-        end
-    end
-})
-
--- Tab for Minigames
-local MinigamesTab = Window:CreateTab("Minigames", 4483362458) -- Title and icon
-
--- Information
-MinigamesTab:CreateSection("Minigames Information")
-MinigamesTab:CreateParagraph({Title = "Information", Content = "Required 6 Instances to use this feature. Make sure to use 1 Main Account and 5 Dummy Accounts."})
-
--- Minigame Car
-MinigamesTab:CreateSection("Buy Car Section")
-
--- Button to Buy Avanza 1.5G
-MinigamesTab:CreateButton({
-    Name = "Buy Avanza (ONLY FOR LOSE ACCOUNT)",
+-- Start Button for AutoFarm
+AutofarmTab:CreateButton({
+    Name = "Start AutoFarm (Truck)",
     Callback = function()
-        local args = {
-            [1] = "Buy",
-            [2] = "2021Avanza15CVT",
-            [3] = "White",
-            [4] = "Toyota"
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteFunctions"):WaitForChild("Dealership"):InvokeServer(unpack(args))
+        StartAutoFarmTruck() -- Start the truck auto-farm when the button is clicked
     end,
 })
 
--- Button to Buy Hiace
-MinigamesTab:CreateButton({
-    Name = "Buy Hiace (ONLY FOR WIN ACCOUNT)",
+-- Create toggle button for stopping the auto farm
+local toggleAutoFarm = false
+
+-- Create Button for Stopping AutoFarm
+AutofarmTab:CreateButton({
+    Name = "Stop AutoFarm",
     Callback = function()
-        local args = {
-            [1] = "Buy",
-            [2] = "2020Hiace",
-            [3] = "White",
-            [4] = "Toyota"
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteFunctions"):WaitForChild("Dealership"):InvokeServer(unpack(args))
+        toggleAutoFarm = false -- Set the toggle to false to stop auto-farming
+        print("AutoFarm stopped.") -- Log when auto-farm is stopped
     end,
 })
 
--- Minigames Config Section
-MinigamesTab:CreateSection("Minigames Config")
-
--- Pending Loop Time
-local pendingLoopTime = 1.5 -- Default value
-local Input = MinigamesTab:CreateInput({
-    Name = "Pending Loop Time",
-    CurrentValue = tostring(pendingLoopTime), -- Default value as string for easy conversion
-    PlaceholderText = "Input Placeholder",
-    RemoveTextAfterFocusLost = false,
-    Flag = "Input1",
-    Callback = function(Text)
-        local time = tonumber(Text) -- Convert the input text to a number
-        if time then
-            pendingLoopTime = time
-        else
-            print("Invalid input. Using default 1.5 seconds.")
-            pendingLoopTime = 1.5
-        end
-    end,
-})
-
--- Global flags for minigame states
-local isMiniGameWinActive = false
-local isMiniGameLoseActive = false
-
--- Win Account Toggle
-MinigamesTab:CreateToggle({
-    Name = "Win Account",
-    CurrentValue = false,
-    Flag = "WinAccount",
-    Callback = function(Value)
-        local player = game.Players.LocalPlayer
-
-        -- Function to enter the minigame
-        local function enterMinigame(vehicle)
-            local args = {
-                [1] = "Enter",
-                [2] = vehicle
-            }
-            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
-        end
-
-        -- Function to leave the minigame
-        local function leaveMinigame(vehicle)
-            local args = {
-                [1] = "Leave",
-                [2] = vehicle
-            }
-            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
-        end
-
-        if Value then
-            isMiniGameWinActive = true
-            enterMinigame("2020Hiace")
-
-            -- Detect when the character resets
-            player.CharacterAdded:Connect(function()
-                wait(pendingLoopTime)
-                if isMiniGameWinActive then
-                    enterMinigame("2020Hiace")
-                end
-            end)
-        else
-            -- Reset Character and leave the minigame
-            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-                player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Reset the character
-            end
-            isMiniGameWinActive = false
-            leaveMinigame("2020Hiace")
-        end
-    end
-})
-
--- Lose Account Toggle
-MinigamesTab:CreateToggle({
-    Name = "Lose Account",
-    CurrentValue = false,
-    Flag = "LoseAccount",
-    Callback = function(Value)
-        local player = game.Players.LocalPlayer
-
-        -- Function to enter the minigame
-        local function enterMinigame(vehicle)
-            local args = {
-                [1] = "Enter",
-                [2] = vehicle
-            }
-            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
-            local humanoid = player.Character:WaitForChild("Humanoid")
-
-            -- Start jumping coroutine
-            coroutine.wrap(function()
-                while isMiniGameLoseActive do
-                    humanoid.Jump = true
-                    wait(1)
-                end
-            end)()
-        end
-
-        -- Function to leave the minigame
-        local function leaveMinigame(vehicle)
-            local args = {
-                [1] = "Leave",
-                [2] = vehicle
-            }
-            game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteEvents"):WaitForChild("Minigames"):FireServer(unpack(args))
-        end
-
-        if Value then
-            isMiniGameLoseActive = true
-            enterMinigame("2021Avanza15CVT")
-
-            -- Detect when the character resets
-            player.CharacterAdded:Connect(function()
-                wait(pendingLoopTime)
-                if isMiniGameLoseActive then
-                    enterMinigame("2021Avanza15CVT")
-                end
-            end)
-        else
-            -- Reset Character and leave the minigame
-            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-                player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Reset the character
-            end
-            isMiniGameLoseActive = false
-            leaveMinigame("2021Avanza15CVT")
-        end
-    end
-})
-
--- Tab for Settings
-local SettingsTab = Window:CreateTab("Settings", 4483362458) -- Title, Image
-
--- Section
-local Section = SettingsTab:CreateSection("Hub Enabled / Disabled")
-
--- Destroy Button
-local Button = SettingsTab:CreateButton({
-    Name = "Delete UI",
-    Callback = function()
-        Rayfield:Destroy()
-    end,
-})
+-- Finally, show the window
+Rayfield:Show()
 
 -- Ensure UI persists on character reset
 local ScreenGui = Window:GetGui()
