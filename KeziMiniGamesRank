@@ -63,20 +63,6 @@ MinigamesTab:CreateButton({
     end,
 })
 
--- Button to Buy Hiace
-MinigamesTab:CreateButton({
-    Name = "Buy Hiace (ONLY FOR WIN ACCOUNT)",
-    Callback = function()
-        local args = {
-            [1] = "Buy",
-            [2] = "2020Hiace",
-            [3] = "White",
-            [4] = "Toyota"
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("NetworkContainer"):WaitForChild("RemoteFunctions"):WaitForChild("Dealership"):InvokeServer(unpack(args))
-    end,
-})
-
 -- Minigames Config Section
 MinigamesTab:CreateSection("Minigames Config")
 
@@ -93,7 +79,6 @@ local Input = MinigamesTab:CreateInput({
         if time then
             pendingLoopTime = time
         else
-            print("Invalid input. Using default 1.5 seconds.")
             pendingLoopTime = 1.5
         end
     end,
@@ -131,13 +116,13 @@ MinigamesTab:CreateToggle({
 
         if Value then
             isMiniGameWinActive = true
-            enterMinigame("2020Hiace")
+            enterMinigame("2021Avanza15CVT")
 
             -- Detect when the character resets
             player.CharacterAdded:Connect(function()
                 wait(pendingLoopTime)
                 if isMiniGameWinActive then
-                    enterMinigame("2020Hiace")
+                    enterMinigame("2021Avanza15CVT")
                 end
             end)
         else
@@ -146,7 +131,7 @@ MinigamesTab:CreateToggle({
                 player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Reset the character
             end
             isMiniGameWinActive = false
-            leaveMinigame("2020Hiace")
+            leaveMinigame("2021Avanza15CVT")
         end
     end
 })
